@@ -1,6 +1,5 @@
 // src/app/user/layout.js
 import Header from "@/components/Layout/Header";
-import UserSidebar from "@/components/Layout/UserSidebar";
 
 export default function UserLayout({ children }) {
   return (
@@ -13,10 +12,7 @@ export default function UserLayout({ children }) {
       }}
     >
       <Header />
-      <div style={{ display: "flex", flex: 1, marginTop: "80px" }}>
-        <UserSidebar />
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

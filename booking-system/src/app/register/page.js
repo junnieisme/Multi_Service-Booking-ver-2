@@ -3,8 +3,9 @@ import { useState } from "react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    ho_ten: "",
     email: "",
+    so_dien_thoai: "",
     password: "",
     confirmPassword: "",
     role: "user",
@@ -24,10 +25,38 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      console.log("Register data:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
-      window.location.href = "/login";
+      // Chuẩn bị dữ liệu để gửi lên server
+      const submitData = {
+        ho_ten: formData.ho_ten,
+        email: formData.email,
+        so_dien_thoai: formData.so_dien_thoai,
+        password: formData.password,
+        role: formData.role,
+        da_ghi: false, 
+        hint_arth: "", 
+        is_satwe: false, 
+        is_block: false, 
+      };
+
+      console.log("Register data:", submitData);
+
+      // Gọi API đăng ký
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        window.location.href = "/login";
+      } else {
+        setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
+      }
     } catch (err) {
       setError("Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
@@ -126,10 +155,10 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Name Field */}
+            {/* Họ và tên Field */}
             <div>
               <label
-                htmlFor="name"
+                htmlFor="ho_ten"
                 style={{
                   display: "block",
                   fontSize: "0.95rem",
@@ -150,11 +179,11 @@ export default function RegisterPage() {
                 }}
               >
                 <input
-                  id="name"
-                  name="name"
+                  id="ho_ten"
+                  name="ho_ten"
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.ho_ten}
                   onChange={handleChange}
                   placeholder="Nhập họ và tên của bạn"
                   style={{
@@ -212,6 +241,61 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="homersimpson@gmail.com"
+                  style={{
+                    width: "100%",
+                    padding: "1rem 1.2rem",
+                    border: "none",
+                    fontSize: "1rem",
+                    backgroundColor: "transparent",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => {
+                    e.target.parentElement.style.borderColor = "#ff6b6b";
+                    e.target.parentElement.style.backgroundColor = "white";
+                    e.target.parentElement.style.boxShadow =
+                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.parentElement.style.borderColor = "#e5e7eb";
+                    e.target.parentElement.style.backgroundColor = "#fafafa";
+                    e.target.parentElement.style.boxShadow = "none";
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Số điện thoại Field */}
+            <div>
+              <label
+                htmlFor="so_dien_thoai"
+                style={{
+                  display: "block",
+                  fontSize: "0.95rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Số điện thoại
+              </label>
+              <div
+                style={{
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  backgroundColor: "#fafafa",
+                  transition: "all 0.2s ease",
+                  overflow: "hidden",
+                }}
+              >
+                <input
+                  id="so_dien_thoai"
+                  name="so_dien_thoai"
+                  type="tel"
+                  required
+                  value={formData.so_dien_thoai}
+                  onChange={handleChange}
+                  placeholder="Nhập số điện thoại của bạn"
                   style={{
                     width: "100%",
                     padding: "1rem 1.2rem",

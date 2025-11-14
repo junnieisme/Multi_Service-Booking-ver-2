@@ -1,6 +1,5 @@
 // src/app/provider/layout.js
 import Header from "@/components/Layout/Header";
-import ProviderSidebar from "@/components/Layout/ProviderSidebar";
 
 export default function ProviderLayout({ children }) {
   return (
@@ -13,10 +12,7 @@ export default function ProviderLayout({ children }) {
       }}
     >
       <Header />
-      <div style={{ display: "flex", flex: 1, marginTop: "80px" }}>
-        <ProviderSidebar />
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

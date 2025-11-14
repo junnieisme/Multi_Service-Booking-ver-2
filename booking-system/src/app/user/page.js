@@ -12,186 +12,341 @@ export default function UserDashboard() {
     setUser({ name: "Nguyễn Văn A" });
   }, []);
 
-  const weeklySchedule = [
-    { day: "Thứ 2", activity: "Cắt tóc - 15:30" },
-    { day: "Thứ 3", activity: "Yoga - 18:30" },
-    { day: "Thứ 4", activity: "Họp online - 9:00" },
-    { day: "Thứ 5", activity: "Massage - 16:00" },
-    { day: "Thứ 6", activity: "Chăm sóc da - 14:00" },
+  const upcomingAppointments = [
+    {
+      id: 1,
+      service: "Cắt tóc nam",
+      provider: "Barber Pro",
+      date: "Hôm nay, 15:30",
+      status: "Sắp tới",
+    },
+    {
+      id: 2,
+      service: "Massage thư giãn",
+      provider: "Spa Relax",
+      date: "Ngày mai, 14:00",
+      status: "Đã xác nhận",
+    },
+    {
+      id: 3,
+      service: "Chăm sóc da",
+      provider: "Beauty Center",
+      date: "15/10, 10:00",
+      status: "Đã xác nhận",
+    },
   ];
 
-  const calendarDays = [
-    [28, 29, 30, 1, 2, 3, 4],
-    [5, 6, 7, 8, 9, 10, 11],
-    [12, 13, 14, 15, 16, 17, 18],
-    [19, 20, 21, 22, 23, 24, 25],
-    [26, 27, 28, 29, 30, 31, ""],
+  const quickActions = [
+    {
+      title: "Đặt lịch mới",
+      description: "Tìm và đặt dịch vụ mới",
+      icon: "📅",
+      path: "/user/search",
+    },
+    {
+      title: "Lịch hẹn của tôi",
+      description: "Xem và quản lý lịch hẹn",
+      icon: "📋",
+      path: "/user/my-appointments",
+    },
+    {
+      title: "Dịch vụ đã lưu",
+      description: "Dịch vụ yêu thích",
+      icon: "❤️",
+      path: "/user/services",
+    },
+    {
+      title: "Thanh toán",
+      description: "Lịch sử giao dịch",
+      icon: "💳",
+      path: "/user/payment",
+    },
+  ];
+
+  const stats = [
+    { label: "Lịch hẹn sắp tới", value: "3", color: "#2563eb" },
+    { label: "Dịch vụ đã dùng", value: "12", color: "#16a34a" },
+    { label: "Đánh giá đã gửi", value: "8", color: "#dc2626" },
+    { label: "Điểm tích lũy", value: "450", color: "#eab308" },
   ];
 
   return (
     <MainContent>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {/* Header Section */}
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
+        {/* Welcome Section */}
         <div style={{ marginBottom: "2rem" }}>
           <h1
             style={{
-              fontSize: "1.875rem",
+              fontSize: "2rem",
               fontWeight: "bold",
               marginBottom: "0.5rem",
               color: "#1f2937",
             }}
           >
-            Dashboard tổng quan
+            Xin chào, {user?.name}! 👋
           </h1>
-          <p
-            style={{
-              color: "#6b7280",
-              fontSize: "1.125rem",
-            }}
-          ></p>
+          <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
+            Chúc bạn một ngày tốt lành. Bạn có {upcomingAppointments.length}{" "}
+            lịch hẹn sắp tới.
+          </p>
         </div>
 
-        {/* Navigation Menu */}
+        {/* Stats Grid */}
         <div
           style={{
-            display: "flex",
-            gap: "2rem",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "1.5rem",
             marginBottom: "2rem",
-            paddingBottom: "1rem",
-            borderBottom: "1px solid #e5e7eb",
-            flexWrap: "wrap",
           }}
         >
-          {[
-            "Lịch trình của tôi",
-            "To-do List",
-            "Đặt lịch dịch vụ",
-            "Đánh giá & Review",
-            "Thanh toán",
-            "Lịch sử đặt lịch",
-          ].map((item) => (
-            <button
-              key={item}
+          {stats.map((stat, index) => (
+            <div
+              key={index}
               style={{
-                background: "none",
-                border: "none",
-                color: "#6b7280",
-                cursor: "pointer",
-                fontSize: "0.875rem",
-                padding: "0.5rem 0",
-                whiteSpace: "nowrap",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.color = "#374151";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.color = "#6b7280";
+                backgroundColor: "white",
+                padding: "1.5rem",
+                borderRadius: "12px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                border: "1px solid #e5e7eb",
+                textAlign: "center",
               }}
             >
-              {item}
-            </button>
+              <div
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: "bold",
+                  color: stat.color,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {stat.value}
+              </div>
+              <div
+                style={{
+                  color: "#6b7280",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                }}
+              >
+                {stat.label}
+              </div>
+            </div>
           ))}
-        </div>
-
-        {/* Welcome Section */}
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "2rem",
-            borderRadius: "8px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            border: "1px solid #e5e7eb",
-            marginBottom: "2rem",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              marginBottom: "0.5rem",
-              color: "#1f2937",
-            }}
-          >
-            Xin chào, {user?.name}!
-          </h2>
-          <p
-            style={{
-              color: "#6b7280",
-              fontSize: "1rem",
-            }}
-          >
-            Chúc bạn một ngày tốt lành. Bạn có 3 lịch hẹn sắp tới.
-          </p>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "2fr 1fr",
             gap: "2rem",
-            alignItems: "start",
           }}
         >
-          {/* Left Column - Weekly Schedule */}
+          {/* Left Column - Main Content */}
           <div>
+            {/* Upcoming Appointments */}
             <div
               style={{
                 backgroundColor: "white",
                 padding: "1.5rem",
-                borderRadius: "8px",
+                borderRadius: "12px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                border: "1px solid #e5e7eb",
+                marginBottom: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "1.25rem",
+                    fontWeight: "bold",
+                    color: "#1f2937",
+                  }}
+                >
+                  Lịch hẹn sắp tới
+                </h2>
+                <button
+                  onClick={() => router.push("/user/my-appointments")}
+                  style={{
+                    color: "#2563eb",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  Xem tất cả
+                </button>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
+                {upcomingAppointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "1rem",
+                      backgroundColor: "#f8fafc",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = "#f1f5f9";
+                      e.target.style.borderColor = "#cbd5e1";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "#f8fafc";
+                      e.target.style.borderColor = "#e2e8f0";
+                    }}
+                    onClick={() => router.push("/user/my-appointments")}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "0.25rem",
+                        }}
+                      >
+                        <h3
+                          style={{
+                            fontWeight: "600",
+                            color: "#1f2937",
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          {appointment.service}
+                        </h3>
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            fontWeight: "500",
+                            padding: "0.25rem 0.5rem",
+                            borderRadius: "12px",
+                            backgroundColor:
+                              appointment.status === "Sắp tới"
+                                ? "#fef3c7"
+                                : "#d1fae5",
+                            color:
+                              appointment.status === "Sắp tới"
+                                ? "#92400e"
+                                : "#065f46",
+                          }}
+                        >
+                          {appointment.status}
+                        </span>
+                      </div>
+                      <p
+                        style={{
+                          color: "#6b7280",
+                          fontSize: "0.75rem",
+                          marginBottom: "0.25rem",
+                        }}
+                      >
+                        {appointment.provider}
+                      </p>
+                      <p
+                        style={{
+                          color: "#374151",
+                          fontSize: "0.75rem",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {appointment.date}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div
+              style={{
+                backgroundColor: "white",
+                padding: "1.5rem",
+                borderRadius: "12px",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                 border: "1px solid #e5e7eb",
               }}
             >
-              <h3
+              <h2
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: "bold",
-                  marginBottom: "1rem",
                   color: "#1f2937",
+                  marginBottom: "1.5rem",
                 }}
               >
-                LỊCH TRÌNH TUẦN NÀY
-              </h3>
-
+                Thao tác nhanh
+              </h2>
               <div
                 style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "6px",
-                  overflow: "hidden",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "1rem",
                 }}
               >
-                {weeklySchedule.map((item, index) => (
+                {quickActions.map((action, index) => (
                   <div
                     key={index}
                     style={{
                       display: "flex",
-                      padding: "1rem",
-                      borderBottom:
-                        index < weeklySchedule.length - 1
-                          ? "1px solid #e5e7eb"
-                          : "none",
-                      backgroundColor: index % 2 === 0 ? "#f9fafb" : "white",
+                      alignItems: "center",
+                      padding: "1.5rem",
+                      backgroundColor: "#f8fafc",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
                     }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#f1f5f9";
+                      e.currentTarget.style.borderColor = "#cbd5e1";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#f8fafc";
+                      e.currentTarget.style.borderColor = "#e2e8f0";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                    onClick={() => router.push(action.path)}
                   >
-                    <div
-                      style={{
-                        fontWeight: "600",
-                        minWidth: "80px",
-                        color: "#374151",
-                        fontSize: "0.875rem",
-                      }}
-                    >
-                      {item.day}
+                    <div style={{ fontSize: "2rem", marginRight: "1rem" }}>
+                      {action.icon}
                     </div>
-                    <div
-                      style={{
-                        color: "#6b7280",
-                        fontSize: "0.875rem",
-                      }}
-                    >
-                      {item.activity}
+                    <div>
+                      <h3
+                        style={{
+                          fontWeight: "600",
+                          color: "#1f2937",
+                          fontSize: "0.875rem",
+                          marginBottom: "0.25rem",
+                        }}
+                      >
+                        {action.title}
+                      </h3>
+                      <p style={{ color: "#6b7280", fontSize: "0.75rem" }}>
+                        {action.description}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -199,107 +354,144 @@ export default function UserDashboard() {
             </div>
           </div>
 
-          {/* Right Column - Calendar */}
+          {/* Right Column - Sidebar */}
           <div>
+            {/* Recent Activity */}
             <div
               style={{
                 backgroundColor: "white",
                 padding: "1.5rem",
-                borderRadius: "8px",
+                borderRadius: "12px",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                 border: "1px solid #e5e7eb",
+                marginBottom: "2rem",
               }}
             >
-              <h3
+              <h2
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: "bold",
-                  marginBottom: "1rem",
                   color: "#1f2937",
+                  marginBottom: "1rem",
                 }}
               >
-                LỊCH THÁNG 10
-              </h3>
-
-              {/* Calendar Header */}
+                Hoạt động gần đây
+              </h2>
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  textAlign: "center",
-                  fontWeight: "600",
-                  marginBottom: "0.5rem",
-                  color: "#374151",
-                  fontSize: "0.875rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
                 }}
               >
-                {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
-                  <div key={day}>{day}</div>
+                {[
+                  {
+                    action: "Đã đặt lịch",
+                    service: "Cắt tóc nam",
+                    time: "2 giờ trước",
+                  },
+                  {
+                    action: "Đã hủy lịch",
+                    service: "Massage",
+                    time: "1 ngày trước",
+                  },
+                  {
+                    action: "Đã đánh giá",
+                    service: "Spa thư giãn",
+                    time: "2 ngày trước",
+                  },
+                ].map((activity, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        backgroundColor: "#2563eb",
+                        borderRadius: "50%",
+                        marginTop: "0.25rem",
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <p
+                        style={{
+                          color: "#374151",
+                          fontSize: "0.875rem",
+                          fontWeight: "500",
+                          marginBottom: "0.125rem",
+                        }}
+                      >
+                        {activity.action}:{" "}
+                        <span style={{ color: "#6b7280" }}>
+                          {activity.service}
+                        </span>
+                      </p>
+                      <p style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
+                        {activity.time}
+                      </p>
+                    </div>
+                  </div>
                 ))}
               </div>
-
-              {/* Calendar Days */}
-              {calendarDays.map((week, weekIndex) => (
-                <div
-                  key={weekIndex}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(7, 1fr)",
-                    textAlign: "center",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {week.map((day, dayIndex) => (
-                    <div
-                      key={dayIndex}
-                      style={{
-                        padding: "0.5rem",
-                        color: day ? "#374151" : "#d1d5db",
-                        backgroundColor: day === 1 ? "#e0f2fe" : "transparent",
-                        borderRadius: "4px",
-                        fontSize: "0.875rem",
-                        fontWeight: day ? "500" : "400",
-                      }}
-                    >
-                      {day}
-                    </div>
-                  ))}
-                </div>
-              ))}
             </div>
 
-            {/* Appointment History */}
+            {/* Promotions */}
             <div
               style={{
-                backgroundColor: "white",
+                backgroundColor: "#f0f9ff",
                 padding: "1.5rem",
-                borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                border: "1px solid #e5e7eb",
-                marginTop: "2rem",
+                borderRadius: "12px",
+                border: "1px solid #bae6fd",
               }}
             >
               <h3
                 style={{
-                  fontSize: "1.25rem",
+                  fontSize: "1rem",
                   fontWeight: "bold",
-                  marginBottom: "1rem",
-                  color: "#1f2937",
+                  color: "#0369a1",
+                  marginBottom: "0.75rem",
                 }}
               >
-                LỊCH SỬ HẸN
+                Ưu đãi đặc biệt 🎁
               </h3>
-              <div
+              <p
                 style={{
-                  color: "#6b7280",
-                  fontStyle: "italic",
+                  color: "#0c4a6e",
                   fontSize: "0.875rem",
-                  textAlign: "center",
-                  padding: "2rem",
+                  marginBottom: "1rem",
                 }}
               >
-                Hiển thị lịch sử các cuộc hẹn đã hoàn thành...
-              </div>
+                Giảm 20% cho lần đặt lịch đầu tiên với đối tác mới
+              </p>
+              <button
+                onClick={() => router.push("/user/search")}
+                style={{
+                  backgroundColor: "#0284c7",
+                  color: "white",
+                  border: "none",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  width: "100%",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#0369a1";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#0284c7";
+                }}
+              >
+                Khám phá ngay
+              </button>
             </div>
           </div>
         </div>

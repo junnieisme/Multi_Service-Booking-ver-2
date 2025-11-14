@@ -7,8 +7,6 @@ export default function ServiceDetail() {
   const params = useParams();
   const router = useRouter();
   const [service, setService] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   // Mock data - giống với data trong homepage
@@ -16,7 +14,7 @@ export default function ServiceDetail() {
     1: {
       id: 1,
       name: "Cắt tóc nam",
-      category: "Làm đẹp",
+      category: "Làm đ�ẹp",
       price: "80,000 VND",
       originalPrice: "100,000 VND",
       rating: 4.8,
@@ -27,20 +25,8 @@ export default function ServiceDetail() {
       location: "Quận 1, TP.HCM",
       address: "123 Nguyễn Huệ, P. Bến Nghé, Quận 1",
       availability: "Còn 3 slot hôm nay",
-      features: ["Tư vấn kiểu tóc", "Gội đầu massage", "Cạo mặt"],
       description:
-        "Dịch vụ cắt tóc nam chuyên nghiệp với đội ngũ barber giàu kinh nghiệm. Chúng tôi cam kết mang đến cho bạn kiểu tóc phù hợp nhất với khuôn mặt và phong cách cá nhân.",
-      workingHours: [
-        "09:00",
-        "10:00",
-        "11:00",
-        "14:00",
-        "15:00",
-        "16:00",
-        "17:00",
-      ],
-      discount: "20%",
-      isPopular: true,
+        "Dịch vụ cắt tóc nam chuyên nghiệp với đội ngũ barber giàu kinh nghiệm. Chúng tôi cam kết mang đến cho bạn kiểu tóc phù hợp nhất với khuôn mặt và phong cách cá nhân.\n\n• Tư vấn kiểu tóc phù hợp\n• Gội đầu massage thư giãn\n• Cạo mặt chuyên nghiệp\n• Sử dụng sản phẩm cao cấp",
     },
     2: {
       id: 2,
@@ -56,25 +42,8 @@ export default function ServiceDetail() {
       location: "Quận 3, TP.HCM",
       address: "456 Lê Văn Sỹ, P. 12, Quận 3",
       availability: "Còn 5 slot hôm nay",
-      features: [
-        "Massage toàn thân",
-        "Tinh dầu thảo dược",
-        "Không gian yên tĩnh",
-      ],
       description:
-        "Trải nghiệm massage thư giãn tuyệt vời giúp giảm căng thẳng, mệt mỏi. Kỹ thuật massage chuyên nghiệp kết hợp tinh dầu thiên nhiên.",
-      workingHours: [
-        "08:00",
-        "09:00",
-        "10:00",
-        "13:00",
-        "14:00",
-        "15:00",
-        "16:00",
-        "17:00",
-      ],
-      discount: "20%",
-      isPopular: true,
+        "Trải nghiệm massage thư giãn tuyệt vời giúp giảm căng thẳng, mệt mỏi. Kỹ thuật massage chuyên nghiệp kết hợp tinh dầu thiên nhiên.\n\n• Massage toàn thân\n• Tinh dầu thảo dược\n• Không gian yên tĩnh\n• Kỹ thuật viên chuyên nghiệp",
     },
   };
 
@@ -94,26 +63,8 @@ export default function ServiceDetail() {
   }, [params.id, router]);
 
   const handleBookAppointment = () => {
-    if (!selectedDate || !selectedTime) {
-      alert("Vui lòng chọn ngày và giờ hẹn!");
-      return;
-    }
-
-    // Chuyển đến trang xác nhận đặt lịch
-    alert(
-      `Đã đặt lịch ${service.name} vào ${selectedDate} lúc ${selectedTime}`
-    );
-    // router.push(`/booking/confirm?service=${service.id}&date=${selectedDate}&time=${selectedTime}`);
-  };
-
-  const getNext7Days = () => {
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      days.push(date.toISOString().split("T")[0]);
-    }
-    return days;
+    // Chuyển đến trang đặt lịch với serviceId
+    router.push(`/user/booking?id=${service.id}`);
   };
 
   if (isLoading) {
@@ -133,7 +84,7 @@ export default function ServiceDetail() {
         <button
           onClick={() => router.push("/")}
           style={{
-            backgroundColor: "#667eea",
+            backgroundColor: "#2563eb",
             color: "white",
             padding: "0.75rem 1.5rem",
             borderRadius: "8px",
@@ -149,7 +100,7 @@ export default function ServiceDetail() {
   }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
+    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 1rem" }}>
       {/* Breadcrumb */}
       <div style={{ marginBottom: "2rem" }}>
         <button
@@ -157,423 +108,300 @@ export default function ServiceDetail() {
           style={{
             background: "none",
             border: "none",
-            color: "#667eea",
+            color: "#6b7280",
             cursor: "pointer",
             fontSize: "0.9rem",
             display: "flex",
             alignItems: "center",
             gap: "0.5rem",
+            padding: "0.5rem 0",
           }}
         >
-          ← Quay lại
+          ← Quay lại danh sách dịch vụ
         </button>
       </div>
 
+      {/* Main Content */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 400px",
-          gap: "3rem",
-          alignItems: "start",
+          backgroundColor: "white",
+          borderRadius: "12px",
+          padding: "2.5rem",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          border: "1px solid #e5e7eb",
         }}
       >
-        {/* Left Column - Service Info */}
-        <div>
+        {/* Service Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "start",
+            gap: "2rem",
+            marginBottom: "2.5rem",
+          }}
+        >
+          {/* Service Icon */}
           <div
             style={{
-              backgroundColor: "white",
+              fontSize: "3.5rem",
+              backgroundColor: "#f8f9fa",
               borderRadius: "12px",
-              padding: "2rem",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
+              padding: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "120px",
+              height: "120px",
             }}
           >
+            {service.image}
+          </div>
+
+          {/* Service Info */}
+          <div style={{ flex: 1 }}>
+            <h1
+              style={{
+                fontSize: "2rem",
+                fontWeight: "bold",
+                color: "#1f2937",
+                marginBottom: "1rem",
+                lineHeight: "1.2",
+              }}
+            >
+              {service.name}
+            </h1>
+
+            {/* Service Meta */}
             <div
               style={{
                 display: "flex",
-                alignItems: "start",
-                gap: "2rem",
+                alignItems: "center",
+                gap: "1rem",
+                marginBottom: "1.5rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  backgroundColor: "#e3f2fd",
+                  color: "#1976d2",
+                  padding: "0.4rem 0.8rem",
+                  borderRadius: "20px",
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                }}
+              >
+                {service.category}
+              </span>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
+                <span
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#666",
+                    fontWeight: "500",
+                  }}
+                >
+                  {service.rating} ({service.reviews} đánh giá)
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <span style={{ fontSize: "0.9rem", color: "#666" }}>⏱️</span>
+                <span
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#666",
+                    fontWeight: "500",
+                  }}
+                >
+                  {service.duration}
+                </span>
+              </div>
+            </div>
+
+            {/* Provider Info */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
                 marginBottom: "2rem",
               }}
             >
               <div
                 style={{
-                  fontSize: "4rem",
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: "12px",
-                  padding: "2rem",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  gap: "0.5rem",
                 }}
               >
-                {service.image}
+                <span style={{ fontSize: "1rem", color: "#666" }}>👤</span>
+                <span style={{ fontSize: "0.95rem", color: "#666" }}>
+                  <strong>Nhà cung cấp:</strong> {service.provider}
+                </span>
               </div>
 
-              <div style={{ flex: 1 }}>
-                <h1
-                  style={{
-                    fontSize: "2rem",
-                    fontWeight: "bold",
-                    color: "#1f2937",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {service.name}
-                </h1>
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                    marginBottom: "1rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span
-                    style={{
-                      backgroundColor: "#e3f2fd",
-                      color: "#1976d2",
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "12px",
-                      fontSize: "0.8rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {service.category}
-                  </span>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    <span style={{ color: "#ffc107" }}>⭐</span>
-                    <span style={{ fontSize: "0.9rem", color: "#666" }}>
-                      {service.rating} ({service.reviews} đánh giá)
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    <span style={{ fontSize: "0.9rem", color: "#666" }}>
-                      ⏱️
-                    </span>
-                    <span style={{ fontSize: "0.9rem", color: "#666" }}>
-                      {service.duration}
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <span style={{ fontSize: "0.9rem", color: "#666" }}>👤</span>
-                  <span style={{ fontSize: "0.9rem", color: "#666" }}>
-                    Nhà cung cấp: {service.provider}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span style={{ fontSize: "0.9rem", color: "#666" }}>📍</span>
-                  <span style={{ fontSize: "0.9rem", color: "#666" }}>
-                    {service.address}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div style={{ marginBottom: "2rem" }}>
-              <h3
-                style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "bold",
-                  marginBottom: "1rem",
-                  color: "#1f2937",
-                }}
-              >
-                Mô tả dịch vụ
-              </h3>
-              <p style={{ color: "#6b7280", lineHeight: "1.6" }}>
-                {service.description}
-              </p>
-            </div>
-
-            {/* Features */}
-            <div>
-              <h3
-                style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "bold",
-                  marginBottom: "1rem",
-                  color: "#1f2937",
-                }}
-              >
-                Điểm nổi bật
-              </h3>
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
                 }}
               >
-                {service.features.map((feature, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      padding: "0.75rem",
-                      backgroundColor: "#f8f9fa",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <span style={{ color: "#10b981" }}>✓</span>
-                    <span style={{ fontSize: "0.9rem", color: "#374151" }}>
-                      {feature}
-                    </span>
-                  </div>
-                ))}
+                <span style={{ fontSize: "1rem", color: "#666" }}>📍</span>
+                <span style={{ fontSize: "0.95rem", color: "#666" }}>
+                  <strong>Địa chỉ:</strong> {service.address}
+                </span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Right Column - Booking Form */}
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "2rem",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            position: "sticky",
-            top: "2rem",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              marginBottom: "1.5rem",
-              color: "#1f2937",
-              textAlign: "center",
-            }}
-          >
-            Đặt lịch hẹn
-          </h3>
-
-          {/* Price */}
-          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            {/* Action Section */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5rem",
-                marginBottom: "0.5rem",
+                gap: "1.5rem",
+                marginBottom: "2rem",
+                flexWrap: "wrap",
               }}
             >
-              <span
+              {/* Book Button */}
+              <button
+                onClick={handleBookAppointment}
                 style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "bold",
-                  color: "#ff6b6b",
-                }}
-              >
-                {service.price}
-              </span>
-              <span
-                style={{
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  padding: "0.875rem 2rem",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
                   fontSize: "1rem",
-                  color: "#999",
-                  textDecoration: "line-through",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#1d4ed8";
+                  e.target.style.transform = "translateY(-1px)";
+                  e.target.style.boxShadow = "0 4px 8px rgba(37, 99, 235, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#2563eb";
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 2px 4px rgba(37, 99, 235, 0.2)";
                 }}
               >
-                {service.originalPrice}
-              </span>
-            </div>
-            <span
-              style={{
-                backgroundColor: "#ffd700",
-                color: "#333",
-                padding: "0.25rem 0.75rem",
-                borderRadius: "12px",
-                fontSize: "0.8rem",
-                fontWeight: "bold",
-              }}
-            >
-              Tiết kiệm {service.discount}
-            </span>
-          </div>
+                Đặt lịch ngay
+              </button>
 
-          {/* Booking Form */}
-          <div style={{ marginBottom: "2rem" }}>
-            {/* Date Selection */}
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                }}
-              >
-                📅 Chọn ngày
-              </label>
-              <select
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                <option value="">Chọn ngày hẹn</option>
-                {getNext7Days().map((date) => (
-                  <option key={date} value={date}>
-                    {new Date(date).toLocaleDateString("vi-VN", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Time Selection */}
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                }}
-              >
-                ⏰ Chọn giờ
-              </label>
-              <select
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                <option value="">Chọn giờ hẹn</option>
-                {service.workingHours.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Service Details */}
-            <div
-              style={{
-                backgroundColor: "#f8f9fa",
-                padding: "1rem",
-                borderRadius: "8px",
-                marginBottom: "1.5rem",
-              }}
-            >
+              {/* Price Info */}
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "0.5rem",
+                  alignItems: "center",
+                  gap: "0.75rem",
                 }}
               >
-                <span style={{ color: "#6b7280" }}>Thời lượng:</span>
-                <span style={{ fontWeight: "500" }}>{service.duration}</span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                <span style={{ color: "#6b7280" }}>Địa điểm:</span>
-                <span style={{ fontWeight: "500" }}>{service.location}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#6b7280" }}>Tình trạng:</span>
-                <span style={{ color: "#22c55e", fontWeight: "500" }}>
-                  {service.availability}
+                <span
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    color: "#dc2626",
+                  }}
+                >
+                  {service.price}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    color: "#9ca3af",
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {service.originalPrice}
+                </span>
+                <span
+                  style={{
+                    backgroundColor: "#dcfce7",
+                    color: "#166534",
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "6px",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                  }}
+                >
+                  -20%
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Book Button */}
-          <button
-            onClick={handleBookAppointment}
-            disabled={!selectedDate || !selectedTime}
+            {/* Availability */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.5rem 1rem",
+                backgroundColor: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+                color: "#166534",
+                fontWeight: "500",
+              }}
+            >
+              <span>✅</span>
+              {service.availability}
+            </div>
+          </div>
+        </div>
+
+        {/* Description Section */}
+        <div>
+          <h2
             style={{
-              width: "100%",
-              backgroundColor:
-                !selectedDate || !selectedTime ? "#9ca3af" : "#667eea",
-              color: "white",
-              border: "none",
-              padding: "1rem",
-              borderRadius: "8px",
-              fontWeight: "600",
-              cursor:
-                !selectedDate || !selectedTime ? "not-allowed" : "pointer",
-              fontSize: "1rem",
-              transition: "background-color 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              if (selectedDate && selectedTime) {
-                e.target.style.backgroundColor = "#5a6fd8";
-              }
-            }}
-            onMouseOut={(e) => {
-              if (selectedDate && selectedTime) {
-                e.target.style.backgroundColor = "#667eea";
-              }
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              color: "#1f2937",
+              marginBottom: "1.5rem",
+              paddingBottom: "0.5rem",
+              borderBottom: "2px solid #f3f4f6",
             }}
           >
-            📅 Xác nhận đặt lịch
-          </button>
-
-          {/* Additional Info */}
-          <div style={{ marginTop: "1rem", textAlign: "center" }}>
-            <p style={{ fontSize: "0.8rem", color: "#6b7280" }}>
-              🔒 Thanh toán an toàn • 🎯 Đúng chuyên gia • ⭐ Đánh giá thực
-            </p>
+            Mô tả dịch vụ
+          </h2>
+          <div
+            style={{
+              color: "#4b5563",
+              lineHeight: "1.7",
+              fontSize: "1rem",
+            }}
+          >
+            {service.description.split("\n").map((paragraph, index) => (
+              <p
+                key={index}
+                style={{
+                  marginBottom: paragraph.startsWith("•") ? "0.5rem" : "1rem",
+                  paddingLeft: paragraph.startsWith("•") ? "1rem" : "0",
+                }}
+              >
+                {paragraph}
+              </p>
+            ))}
           </div>
         </div>
       </div>
