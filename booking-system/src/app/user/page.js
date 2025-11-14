@@ -9,7 +9,7 @@ export default function UserDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    setUser({ name: "Nguyễn Văn A" });
+    setUser({ name: JSON.parse(localStorage.getItem('user')).name });
   }, []);
 
   const upcomingAppointments = [
