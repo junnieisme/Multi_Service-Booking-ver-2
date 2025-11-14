@@ -16,23 +16,66 @@ export default function LoginPage() {
     setError("");
 
     try {
-      console.log("Login data:", { ...formData, role: activeTab });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // console.log("Login data:", { ...formData, role: activeTab });
 
-      localStorage.setItem("authToken", "mock-token");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: activeTab === "user" ? "Người dùng" : "Nhà cung cấp",
-          email: formData.email,
-          role: activeTab,
-        })
-      );
+      if (activeTab === "user") {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/khach-hang/dang-nhap",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+        const result = await response.json();
+        if (result.status === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          localStorage.setItem("authToken", result.key);
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              name: result.ten,
+              email: formData.email,
+              role: activeTab,
+            })
+          );
+          alert("Đăng nhập thành công!");
+          // Điều hướng dựa trên loại tài khoản
+          const redirectPath = activeTab === "user" ? "/user" : "/provider";
+          window.location.href = redirectPath;
+        }
+      } else if (activeTab === "provider") {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/dang-nhap",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+        const result = await response.json();
 
-      alert("Đăng nhập thành công!");
-      // Điều hướng dựa trên loại tài khoản
-      const redirectPath = activeTab === "user" ? "/user" : "/provider";
-      window.location.href = redirectPath;
+        if (result.status === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          localStorage.setItem("authToken", result.key);
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              name: result.ten,
+              email: formData.email,
+              role: activeTab,
+            })
+          );
+          alert("Đăng nhập thành công!");
+          // Điều hướng dựa trên loại tài khoản
+          const redirectPath = activeTab === "user" ? "/user" : "/provider";
+          window.location.href = redirectPath;
+        }
+      }
     } catch (err) {
       setError("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
     } finally {

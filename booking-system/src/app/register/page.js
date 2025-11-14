@@ -31,31 +31,53 @@ export default function RegisterPage() {
         email: formData.email,
         so_dien_thoai: formData.so_dien_thoai,
         password: formData.password,
-        role: formData.role,
-        da_ghi: false, 
-        hint_arth: "", 
-        is_satwe: false, 
-        is_block: false, 
+        // role: formData.role,
+        // da_ghi: false,
+        // hint_arth: "",
+        // is_satwe: false,
+        // is_block: false,
       };
 
       console.log("Register data:", submitData);
 
       // Gọi API đăng ký
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
+      if (formData.role === "provider") {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/dang-ky",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(submitData),
+          }
+        );
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (response.ok) {
-        alert("Đăng ký thành công! Vui lòng đăng nhập.");
-        window.location.href = "/login";
-      } else {
-        setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
+        if (response.ok) {
+          alert("Đăng ký tài khoản nhà cung cấp thành công! Vui lòng đăng nhập.");
+          window.location.href = "/login";
+        } else {
+          setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
+        }
+      } else if (formData.role === "user") {
+        const response = await fetch("http://127.0.0.1:8000/api/khach-hang/dang-ky", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submitData),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("Đăng ký tài khoản khách hàng thành công! Vui lòng đăng nhập.");
+          window.location.href = "/login";
+        } else {
+          setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
+        }
       }
     } catch (err) {
       setError("Đăng ký thất bại. Vui lòng thử lại.");
