@@ -1,8 +1,20 @@
 "use client";
 import Header from "@/components/Layout/Header";
 import MainContent from "@/components/Layout/MainContent";
+import React, { useState, useEffect } from "react";
 
 export default function HomePage() {
+  //dữ liệu từ api trả về nó sẽ như này
+  // {
+  //           "ten_dich_vu": "Lưu trú",
+  //           "id_nha_cung_cap": 1,
+  //           "ten_thuong_hieu": "InterContinental Danang Sun Peninsula Resort",
+  //           "hinh_anh": "https://th.bing.com/th/id/R.ec9929b9c3c3dd8198ca20d246d22bcf?rik=RWQv1vt62sUsrA&pid=ImgRaw&r=0",
+  //           "tinh_thanh": "Đà Nẵng",
+  //           "dia_chi_cu_the": "Bãi Bắc bán đảo Sơn Trà",
+  //           "mo_ta_ngan": "Resort 5-sao ven biển",
+  //           "mo_ta_chi_tiet": "Nằm trên bán đảo Sơn Trà, phòng nghỉ sang trọng, view biển, sân golf riêng."
+  //       },
   const services = [
     {
       id: 1,
@@ -117,7 +129,51 @@ export default function HomePage() {
       isTrending: false,
     },
   ];
+  const [data, setData] = useState(null); // Để lưu dữ liệu nhận được
+  const [isLoading, setIsLoading] = useState(true); // Để quản lý trạng thái tải
+  const [error, setError] = useState(null); // Để lưu lỗi
+  useEffect(() => {
+    const fetchData = async () => {
+      const API_URL = "http://127.0.0.1:8000/api/thuong-hieu/get-data";
 
+      try {
+        // 1. Reset trạng thái lỗi và bắt đầu tải
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Lưu ý: Có thể bỏ header "Content-Type" cho GET nếu không cần
+          },
+        });
+
+        // 2. PHẢI ĐỌC DỮ LIỆU JSON
+        const result = await response.json();
+
+        // 3. Kiểm tra HTTP status code
+        if (!response.ok) {
+          // Xử lý lỗi HTTP (4xx, 5xx)
+          throw new Error(
+            result.message || `Lỗi khi tải dữ liệu: ${response.status}`
+          );
+        }
+
+        // 4. Lưu dữ liệu đã nhận được
+        setData(result);
+        console.log("Kết quả từ API:", result);
+      } catch (err) {
+        console.error("Lỗi khi tải dữ liệu:", err);
+        setError(err.message || "Không thể kết nối đến server API.");
+      } finally {
+        // 5. Kết thúc tải
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Chạy một lần khi component mount
   return (
     <div
       style={{
