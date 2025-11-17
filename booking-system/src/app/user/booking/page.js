@@ -82,6 +82,17 @@ export default function BookingPage() {
       return;
     }
 
+    // Validate required fields
+    if (!bookingData.fullName.trim()) {
+      alert("Vui lòng nhập họ và tên!");
+      return;
+    }
+
+    if (!bookingData.phone.trim()) {
+      alert("Vui lòng nhập số điện thoại!");
+      return;
+    }
+
     // Nếu chọn thanh toán sau, chuyển thẳng đến trang success
     if (bookingData.paymentMethod === "counter") {
       // Lưu thông tin booking vào localStorage hoặc state management
@@ -93,7 +104,11 @@ export default function BookingPage() {
         bookingDate: new Date().toISOString(),
       };
       localStorage.setItem("bookingInfo", JSON.stringify(bookingInfo));
-      router.push("/booking/success");
+
+      // ==========================================================
+      // SỬA LỖI 1 TẠI ĐÂY: Thêm /user vào đường dẫn
+      // ==========================================================
+      router.push("/user/booking/success");
       return;
     }
 
@@ -109,7 +124,11 @@ export default function BookingPage() {
         bookingData.paymentMethod === "deposit" ? remainingAmount : 0,
     };
     localStorage.setItem("paymentInfo", JSON.stringify(paymentInfo));
-    router.push("/payment");
+
+    // ==========================================================
+    // SỬA LỖI 2 TẠI ĐÂY: Bỏ các dấu nháy kép và backtick bị thừa
+    // ==========================================================
+    router.push("/user/checkout");
   };
 
   const handleCancel = () => {
@@ -834,7 +853,7 @@ export default function BookingPage() {
                 </p>
               </div>
 
-              {/* ĐIỀU KHOẢN THANH TOÁN - ĐÃ ĐỔI CHỖ LÊN TRÊN */}
+              {/* ĐIỀU KHOẢN THANH TOÁN */}
               <div
                 style={{
                   backgroundColor: "white",
@@ -881,7 +900,7 @@ export default function BookingPage() {
                 </div>
               </div>
 
-              {/* TỔNG THANH TOÁN - ĐÃ ĐỔI XUỐNG DƯỚI */}
+              {/* TỔNG THANH TOÁN */}
               <div
                 style={{
                   backgroundColor: "white",

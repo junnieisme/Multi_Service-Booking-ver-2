@@ -1,16 +1,8 @@
-// src/app/user/layout.js
 import Header from "@/components/Layout/Header";
 
 export default function UserLayout({ children }) {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f9fafb",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       {children}
     </div>
