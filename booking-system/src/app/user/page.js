@@ -6,10 +6,27 @@ import MainContent from "@/components/Layout/MainContent";
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    setUser({ name: JSON.parse(localStorage.getItem('user')).name });
+    // Kiểm tra và xử lý an toàn
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser({ name: parsedUser.name || "Người dùng" });
+      } else {
+        // Nếu không có user data, set giá trị mặc định
+        setUser({ name: "Người dùng" });
+        console.warn("Không tìm thấy thông tin người dùng trong localStorage");
+      }
+    } catch (error) {
+      console.error("Lỗi khi đọc thông tin người dùng:", error);
+      setUser({ name: "Người dùng" });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const upcomingAppointments = [
@@ -70,6 +87,32 @@ export default function UserDashboard() {
     { label: "Điểm tích lũy", value: "450", color: "#eab308" },
   ];
 
+  // Hiển thị loading nếu đang tải dữ liệu
+  if (loading) {
+    return (
+      <MainContent>
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "2rem",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⏳</div>
+            <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
+              Đang tải...
+            </p>
+          </div>
+        </div>
+      </MainContent>
+    );
+  }
+
   return (
     <MainContent>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
@@ -83,7 +126,7 @@ export default function UserDashboard() {
               color: "#1f2937",
             }}
           >
-            Xin chào, {user?.name}! 👋
+            Xin chào, {user?.name || "Người dùng"}! 👋
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Chúc bạn một ngày tốt lành. Bạn có {upcomingAppointments.length}{" "}
@@ -95,7 +138,7 @@ export default function UserDashboard() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
             gap: "1.5rem",
             marginBottom: "2rem",
           }}
@@ -181,6 +224,13 @@ export default function UserDashboard() {
                     cursor: "pointer",
                     fontWeight: "500",
                     fontSize: "0.875rem",
+                    transition: "color 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.color = "#1d4ed8";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.color = "#2563eb";
                   }}
                 >
                   Xem tất cả
@@ -208,12 +258,12 @@ export default function UserDashboard() {
                       transition: "all 0.2s",
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = "#f1f5f9";
-                      e.target.style.borderColor = "#cbd5e1";
+                      e.currentTarget.style.backgroundColor = "#f1f5f9";
+                      e.currentTarget.style.borderColor = "#cbd5e1";
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "#f8fafc";
-                      e.target.style.borderColor = "#e2e8f0";
+                      e.currentTarget.style.backgroundColor = "#f8fafc";
+                      e.currentTarget.style.borderColor = "#e2e8f0";
                     }}
                     onClick={() => router.push("/user/my-appointments")}
                   >
@@ -301,7 +351,7 @@ export default function UserDashboard() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
                   gap: "1rem",
                 }}
               >

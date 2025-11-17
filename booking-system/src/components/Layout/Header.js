@@ -24,7 +24,6 @@ export default function Header() {
     { name: "Homepage", path: "/" },
     { name: "Dịch vụ", path: "/user" },
     { name: "Lịch hẹn của tôi", path: "/user/my-appointments" },
-    { name: "Tìm kiếm", path: "/user/search" },
     { name: "Hồ sơ", path: "/user/profile" },
   ];
 
@@ -106,9 +105,10 @@ export default function Header() {
             )}
           </div>
 
-          {/* Search Bar - chỉ hiển thị cho user và không ở homepage */}
+          {/* Search Bar - HIỆN VỚI MỌI ROLE VÀ Ở HOMEPAGE */}
           <div style={{ flex: "1", maxWidth: "500px", margin: "0 2rem" }}>
-            {isUser && pathname !== "/" && <SearchBar />}
+            {/* Chỉ ẩn SearchBar ở các trang provider dashboard nếu cần */}
+            {!pathname.startsWith("/provider/dashboard") && <SearchBar />}
           </div>
 
           {/* Right side */}
@@ -137,9 +137,9 @@ export default function Header() {
                 <button
                   onClick={() => {
                     if (isProvider) {
-                      router.push("/user/dashboard");
+                      router.push("/user");
                     } else {
-                      router.push("/provider/dashboard");
+                      router.push("/provider");
                     }
                   }}
                   style={{
@@ -171,7 +171,7 @@ export default function Header() {
             {pathname === "/" && (
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
-                  onClick={() => router.push("/user/dashboard")}
+                  onClick={() => router.push("/user")}
                   style={{
                     color: "#374151",
                     background: "none",
@@ -194,7 +194,7 @@ export default function Header() {
                   Khách hàng
                 </button>
                 <button
-                  onClick={() => router.push("/provider/dashboard")}
+                  onClick={() => router.push("/provider")}
                   style={{
                     backgroundColor: "#2563eb",
                     color: "white",

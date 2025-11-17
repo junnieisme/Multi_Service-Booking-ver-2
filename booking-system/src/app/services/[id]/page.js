@@ -14,7 +14,7 @@ export default function ServiceDetail() {
     1: {
       id: 1,
       name: "Cắt tóc nam",
-      category: "Làm đ�ẹp",
+      category: "Làm đẹp",
       price: "80,000 VND",
       originalPrice: "100,000 VND",
       rating: 4.8,
