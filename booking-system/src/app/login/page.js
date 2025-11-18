@@ -41,10 +41,14 @@ export default function LoginPage() {
               role: activeTab,
             })
           );
-          alert("Đăng nhập thành công!");
+          alert(result.message);
           // Điều hướng dựa trên loại tài khoản
           const redirectPath = activeTab === "user" ? "/user" : "/provider";
           window.location.href = redirectPath;
+        } else if (result.status === 0) {
+          alert(result.message);
+        } else if (result.status === 2) {
+          alert(result.message);
         }
       } else if (activeTab === "provider") {
         const response = await fetch(
@@ -74,6 +78,10 @@ export default function LoginPage() {
           // Điều hướng dựa trên loại tài khoản
           const redirectPath = activeTab === "user" ? "/user" : "/provider";
           window.location.href = redirectPath;
+        } else if (result.status === 0) {
+          alert(result.message);
+        } else if (result.status === 2) {
+          alert(result.message);
         }
       }
     } catch (err) {

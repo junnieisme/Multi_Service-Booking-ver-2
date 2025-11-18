@@ -8,9 +8,31 @@ export default function UserDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
+  const [lich, setLich] = useState([]);
   useEffect(() => {
-    // Kiểm tra và xử lý an toàn
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/count-data-lich",
+          {
+            method: "GET",
+            headers: {
+            Authorization: 'Bearer '+ localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        setLich(data);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+
+    // hiển thị tên khách hàng
     try {
       const userData = localStorage.getItem("user");
       if (userData) {
@@ -81,10 +103,10 @@ export default function UserDashboard() {
   ];
 
   const stats = [
-    { label: "Lịch hẹn sắp tới", value: "3", color: "#2563eb" },
-    { label: "Dịch vụ đã dùng", value: "12", color: "#16a34a" },
+    { label: "Lịch hẹn sắp tới", value: lich.so_lich_sap_toi, color: "#2563eb" },
+    { label: "Dịch vụ đã dùng", value: lich.so_lich_da_qua, color: "#16a34a" },
     { label: "Đánh giá đã gửi", value: "8", color: "#dc2626" },
-    { label: "Điểm tích lũy", value: "450", color: "#eab308" },
+    { label: "Điểm tích lũy", value: lich.diem_tich_luy, color: "#eab308" },
   ];
 
   // Hiển thị loading nếu đang tải dữ liệu
