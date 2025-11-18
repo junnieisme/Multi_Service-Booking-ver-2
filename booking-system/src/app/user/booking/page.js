@@ -9,64 +9,86 @@ export default function BookingPage() {
   const serviceId = searchParams.get("id");
 
   const [service, setService] = useState(null);
+  const [errors, setErrors] = useState({});
+
+  // Font chữ chuẩn cho Tiếng Việt
+  const vietnameseFont = {
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+  };
+
+  // Hàm lấy ngày hiện tại format YYYY-MM-DD
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const [bookingData, setBookingData] = useState({
     fullName: "",
     phone: "",
-    address: "Hà Nội",
-    date: "06/02/2025",
+    address: "",
+    date: getTodayString(),
     time: "14:00",
     notes: "",
-    paymentMethod: "full", // 'full', 'deposit', 'counter'
+    paymentMethod: "deposit",
     agreeTerms: false,
   });
 
-  // Mock data for services
+  // Mock data
   const servicesData = {
     1: {
       id: 1,
-      name: "Cắt tóc nam",
-      category: "Làm đẹp",
-      price: 150000,
-      duration: "30 phút",
-      image: "✂️",
-      provider: "Barber Pro",
-      description:
-        "Dịch vụ cắt tóc nam chuyên nghiệp với đội ngũ barber giàu kinh nghiệm.",
+      loai_dich_vu: "Lưu trú",
+      ten_thuong_hieu: "InterContinental Danang",
+      ten_dich_vu: "Combo resort cho 3 ngày 2 đêm và nhiều tiện ích khác",
+      hinh_anh:
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/43859674.jpg?k=04578449670209583432815834e3761046669662656640161662653705512240&o=&hp=1",
+      tinh_thanh: "Đà Nẵng",
+      dia_chi_cu_the: "Bãi Bắc bán đảo Sơn Trà",
+      gia: 5000000,
+      thoi_gian: "Check-in 14:00",
     },
     2: {
       id: 2,
-      name: "Massage thư giãn",
-      category: "Sức khỏe",
-      price: 300000,
-      duration: "60 phút",
-      image: "💆",
-      provider: "Spa Relax",
-      description:
-        "Trải nghiệm massage thư giãn tuyệt vời giúp giảm căng thẳng, mệt mỏi.",
+      loai_dich_vu: "Ẩm thực",
+      ten_thuong_hieu: "Madame Lan Restaurant",
+      ten_dich_vu: "Set menu đặc sản miền Trung cho gia đình",
+      hinh_anh:
+        "https://dulichkhampha24.com/wp-content/uploads/2020/01/nha-hang-madame-lan-da-nang-1.jpg",
+      tinh_thanh: "Đà Nẵng",
+      dia_chi_cu_the: "04 Bạch Đằng, Hải Châu",
+      gia: 300000,
+      thoi_gian: "2 giờ",
     },
   };
 
   useEffect(() => {
-    // Simulate API call to get service details
     setTimeout(() => {
       const serviceData = servicesData[serviceId];
       if (serviceData) {
         setService(serviceData);
+        setBookingData((prev) => ({
+          ...prev,
+          address: `${serviceData.dia_chi_cu_the}, ${serviceData.tinh_thanh}`,
+        }));
       }
     }, 500);
   }, [serviceId]);
 
-  const gst = service ? service.price * 0.1 : 0; // 10% GST
-  const totalAmount = service ? service.price + gst : 0;
-  const depositAmount = service ? totalAmount * 0.3 : 0; // 30% deposit
+  // Tính toán tiền
+  const gst = service ? service.gia * 0.1 : 0;
+  const totalAmount = service ? service.gia + gst : 0;
+  const depositAmount = service ? totalAmount * 0.3 : 0;
 
-  // Calculate final amount based on payment method
   const getFinalAmount = () => {
     switch (bookingData.paymentMethod) {
       case "deposit":
         return depositAmount;
       case "counter":
-        return 0; // No payment needed online for counter payment
+        return 0;
       case "full":
       default:
         return totalAmount;
@@ -74,61 +96,58 @@ export default function BookingPage() {
   };
 
   const finalAmount = getFinalAmount();
-  const remainingAmount = totalAmount - depositAmount;
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
+  // --- VALIDATION ---
+  const validateForm = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    if (!bookingData.fullName.trim()) {
+      newErrors.fullName = "Vui lòng nhập họ và tên.";
+      isValid = false;
+    }
+
+    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+    if (!bookingData.phone.trim()) {
+      newErrors.phone = "Vui lòng nhập số điện thoại.";
+      isValid = false;
+    } else if (!phoneRegex.test(bookingData.phone)) {
+      newErrors.phone = "Số điện thoại không hợp lệ.";
+      isValid = false;
+    }
+
+    const selectedDate = new Date(bookingData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      newErrors.date = "Ngày hẹn không hợp lệ.";
+      isValid = false;
+    }
+
+    if (!bookingData.agreeTerms) {
+      alert("Bạn cần đồng ý với điều khoản dịch vụ.");
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async () => {
-    if (!bookingData.agreeTerms) {
-      alert("Vui lòng đồng ý với điều khoản và điều kiện dịch vụ!");
-      return;
+    if (validateForm()) {
+      if (bookingData.paymentMethod === "counter") {
+        router.push("/user/booking/success");
+      } else {
+        router.push("/user/checkout");
+      }
     }
-
-    // Validate required fields
-    if (!bookingData.fullName.trim()) {
-      alert("Vui lòng nhập họ và tên!");
-      return;
-    }
-
-    if (!bookingData.phone.trim()) {
-      alert("Vui lòng nhập số điện thoại!");
-      return;
-    }
-
-    // Nếu chọn thanh toán sau, chuyển thẳng đến trang success
-    if (bookingData.paymentMethod === "counter") {
-      // Lưu thông tin booking vào localStorage hoặc state management
-      const bookingInfo = {
-        ...bookingData,
-        service,
-        totalAmount,
-        bookingId: `BK${Date.now()}`,
-        bookingDate: new Date().toISOString(),
-      };
-      localStorage.setItem("bookingInfo", JSON.stringify(bookingInfo));
-
-      // ==========================================================
-      // SỬA LỖI 1 TẠI ĐÂY: Thêm /user vào đường dẫn
-      // ==========================================================
-      router.push("/user/booking/success");
-      return;
-    }
-
-    // Nếu chọn cọc hoặc trả hết, chuyển đến trang thanh toán
-    const paymentInfo = {
-      ...bookingData,
-      service,
-      amount: finalAmount,
-      paymentType: bookingData.paymentMethod === "deposit" ? "deposit" : "full",
-      totalAmount,
-      depositAmount,
-      remainingAmount:
-        bookingData.paymentMethod === "deposit" ? remainingAmount : 0,
-    };
-    localStorage.setItem("paymentInfo", JSON.stringify(paymentInfo));
-
-    // ==========================================================
-    // SỬA LỖI 2 TẠI ĐÂY: Bỏ các dấu nháy kép và backtick bị thừa
-    // ==========================================================
-    router.push("/user/checkout");
   };
 
   const handleCancel = () => {
@@ -142,7 +161,9 @@ export default function BookingPage() {
   if (!service) {
     return (
       <MainContent>
-        <div style={{ textAlign: "center", padding: "4rem" }}>
+        <div
+          style={{ textAlign: "center", padding: "4rem", ...vietnameseFont }}
+        >
           <div style={{ fontSize: "2rem" }}>⏳</div>
           <p>Đang tải thông tin dịch vụ...</p>
         </div>
@@ -152,7 +173,14 @@ export default function BookingPage() {
 
   return (
     <MainContent>
-      <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "2rem" }}>
+      <div
+        style={{
+          maxWidth: "1000px",
+          margin: "0 auto",
+          padding: "2rem",
+          ...vietnameseFont, // Áp dụng font chữ tiếng Việt
+        }}
+      >
         {/* Header */}
         <div style={{ marginBottom: "2rem" }}>
           <button
@@ -168,9 +196,10 @@ export default function BookingPage() {
               gap: "0.5rem",
               marginBottom: "1rem",
               padding: "0.5rem 0",
+              ...vietnameseFont,
             }}
           >
-            ← Quay lại xem chi tiết dịch vụ
+            ← Quay lại xem chi tiết
           </button>
 
           <div style={{ textAlign: "center" }}>
@@ -185,7 +214,7 @@ export default function BookingPage() {
               Đặt lịch dịch vụ
             </h1>
             <p style={{ color: "#6b7280", fontSize: "1rem" }}>
-              Hoàn thành thông tin để đặt lịch dịch vụ của bạn
+              Vui lòng điền thông tin chính xác để chúng tôi phục vụ tốt nhất
             </p>
           </div>
         </div>
@@ -216,7 +245,7 @@ export default function BookingPage() {
                 gap: "1.5rem",
               }}
             >
-              {/* Service Information (Read-only) */}
+              {/* Service Information */}
               <div
                 style={{
                   backgroundColor: "#f8fafc",
@@ -233,66 +262,54 @@ export default function BookingPage() {
                     marginBottom: "1rem",
                   }}
                 >
-                  Thông tin dịch vụ
+                  Dịch vụ đã chọn
                 </h3>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                    marginBottom: "1rem",
-                  }}
-                >
+                <div style={{ display: "flex", gap: "1rem" }}>
                   <div
                     style={{
-                      fontSize: "2rem",
-                      backgroundColor: "#f1f5f9",
+                      width: "80px",
+                      height: "80px",
                       borderRadius: "8px",
-                      padding: "0.75rem",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minWidth: "60px",
+                      overflow: "hidden",
+                      flexShrink: 0,
                     }}
                   >
-                    {service.image}
+                    <img
+                      src={service.hinh_anh}
+                      alt="Service"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
                   </div>
                   <div>
                     <div
                       style={{
-                        fontSize: "1.125rem",
+                        fontSize: "1rem",
                         fontWeight: "600",
                         color: "#1f2937",
+                        lineHeight: "1.3",
+                        marginBottom: "4px",
                       }}
                     >
-                      {service.name}
+                      {service.ten_dich_vu}
                     </div>
-                    <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                      {service.provider} • {service.duration}
+                    <div
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "#6b7280",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {service.ten_thuong_hieu}
                     </div>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    padding: "0.875rem",
-                    backgroundColor: "white",
-                    borderRadius: "6px",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.875rem",
-                      color: "#374151",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {service.name}
                   </div>
                 </div>
               </div>
 
-              {/* Personal Information */}
+              {/* Personal Information Form */}
               <div>
                 <h2
                   style={{
@@ -302,16 +319,17 @@ export default function BookingPage() {
                     marginBottom: "1.5rem",
                   }}
                 >
-                  Thông tin đặt lịch
+                  Thông tin cá nhân
                 </h2>
 
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "1.5rem",
+                    gap: "1.25rem",
                   }}
                 >
+                  {/* Họ tên */}
                   <div>
                     <label
                       style={{
@@ -322,7 +340,7 @@ export default function BookingPage() {
                         fontWeight: "500",
                       }}
                     >
-                      Họ và tên *
+                      Họ và tên <span style={{ color: "red" }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -333,25 +351,32 @@ export default function BookingPage() {
                           fullName: e.target.value,
                         })
                       }
-                      placeholder="Nhập họ và tên đầy đủ"
+                      placeholder="Nguyễn Văn A"
                       style={{
                         width: "100%",
                         padding: "0.875rem",
-                        border: "1px solid #d1d5db",
+                        border: errors.fullName
+                          ? "1px solid red"
+                          : "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "0.875rem",
-                        transition: "border-color 0.2s",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#3b82f6";
-                        e.target.style.outline = "none";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#d1d5db";
+                        fontFamily: "inherit",
                       }}
                     />
+                    {errors.fullName && (
+                      <span
+                        style={{
+                          color: "red",
+                          fontSize: "0.75rem",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {errors.fullName}
+                      </span>
+                    )}
                   </div>
 
+                  {/* Số điện thoại */}
                   <div>
                     <label
                       style={{
@@ -362,7 +387,7 @@ export default function BookingPage() {
                         fontWeight: "500",
                       }}
                     >
-                      Số điện thoại *
+                      Số điện thoại <span style={{ color: "red" }}>*</span>
                     </label>
                     <input
                       type="tel"
@@ -373,25 +398,32 @@ export default function BookingPage() {
                           phone: e.target.value,
                         })
                       }
-                      placeholder="Nhập số điện thoại"
+                      placeholder="0912345678"
                       style={{
                         width: "100%",
                         padding: "0.875rem",
-                        border: "1px solid #d1d5db",
+                        border: errors.phone
+                          ? "1px solid red"
+                          : "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "0.875rem",
-                        transition: "border-color 0.2s",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#3b82f6";
-                        e.target.style.outline = "none";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#d1d5db";
+                        fontFamily: "inherit",
                       }}
                     />
+                    {errors.phone && (
+                      <span
+                        style={{
+                          color: "red",
+                          fontSize: "0.75rem",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {errors.phone}
+                      </span>
+                    )}
                   </div>
 
+                  {/* Địa chỉ liên hệ (READ ONLY) */}
                   <div>
                     <label
                       style={{
@@ -402,41 +434,27 @@ export default function BookingPage() {
                         fontWeight: "500",
                       }}
                     >
-                      Địa chỉ *
+                      Địa điểm sử dụng dịch vụ (Mặc định)
                     </label>
-                    <select
+                    <input
+                      type="text"
                       value={bookingData.address}
-                      onChange={(e) =>
-                        setBookingData({
-                          ...bookingData,
-                          address: e.target.value,
-                        })
-                      }
+                      readOnly
                       style={{
                         width: "100%",
                         padding: "0.875rem",
-                        border: "1px solid #d1d5db",
+                        border: "1px solid #e5e7eb",
                         borderRadius: "8px",
                         fontSize: "0.875rem",
-                        backgroundColor: "white",
-                        cursor: "pointer",
-                        transition: "border-color 0.2s",
+                        backgroundColor: "#f3f4f6",
+                        color: "#6b7280",
+                        cursor: "not-allowed",
+                        fontFamily: "inherit",
                       }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#3b82f6";
-                        e.target.style.outline = "none";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#d1d5db";
-                      }}
-                    >
-                      <option value="Hà Nội">Hà Nội</option>
-                      <option value="TP.HCM">TP. Hồ Chí Minh</option>
-                      <option value="Đà Nẵng">Đà Nẵng</option>
-                      <option value="Hải Phòng">Hải Phòng</option>
-                    </select>
+                    />
                   </div>
 
+                  {/* Ngày và Giờ hẹn */}
                   <div
                     style={{
                       display: "grid",
@@ -454,10 +472,12 @@ export default function BookingPage() {
                           fontWeight: "500",
                         }}
                       >
-                        Ngày hẹn *
+                        Ngày nhận phòng/dùng bữa{" "}
+                        <span style={{ color: "red" }}>*</span>
                       </label>
                       <input
-                        type="text"
+                        type="date"
+                        min={getTodayString()}
                         value={bookingData.date}
                         onChange={(e) =>
                           setBookingData({
@@ -465,23 +485,29 @@ export default function BookingPage() {
                             date: e.target.value,
                           })
                         }
-                        placeholder="DD/MM/YYYY"
                         style={{
                           width: "100%",
                           padding: "0.875rem",
-                          border: "1px solid #d1d5db",
+                          border: errors.date
+                            ? "1px solid red"
+                            : "1px solid #d1d5db",
                           borderRadius: "8px",
                           fontSize: "0.875rem",
-                          transition: "border-color 0.2s",
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = "#3b82f6";
-                          e.target.style.outline = "none";
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = "#d1d5db";
+                          cursor: "pointer",
+                          fontFamily: "inherit",
                         }}
                       />
+                      {errors.date && (
+                        <span
+                          style={{
+                            color: "red",
+                            fontSize: "0.75rem",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {errors.date}
+                        </span>
+                      )}
                     </div>
 
                     <div>
@@ -494,9 +520,10 @@ export default function BookingPage() {
                           fontWeight: "500",
                         }}
                       >
-                        Giờ hẹn *
+                        Giờ hẹn <span style={{ color: "red" }}>*</span>
                       </label>
-                      <select
+                      <input
+                        type="time"
                         value={bookingData.time}
                         onChange={(e) =>
                           setBookingData({
@@ -510,32 +537,14 @@ export default function BookingPage() {
                           border: "1px solid #d1d5db",
                           borderRadius: "8px",
                           fontSize: "0.875rem",
-                          backgroundColor: "white",
                           cursor: "pointer",
-                          transition: "border-color 0.2s",
+                          fontFamily: "inherit",
                         }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = "#3b82f6";
-                          e.target.style.outline = "none";
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = "#d1d5db";
-                        }}
-                      >
-                        <option value="08:00">08:00</option>
-                        <option value="09:00">09:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="13:00">13:00</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                      </select>
+                      />
                     </div>
                   </div>
 
-                  {/* Tùy chọn thanh toán - 3 radio button chọn 1 */}
+                  {/* --- ĐẨY LÊN ĐÂY: TÙY CHỌN THANH TOÁN --- */}
                   <div>
                     <label
                       style={{
@@ -546,7 +555,8 @@ export default function BookingPage() {
                         fontWeight: "500",
                       }}
                     >
-                      Tùy chọn thanh toán *
+                      Tùy chọn thanh toán{" "}
+                      <span style={{ color: "red" }}>*</span>
                     </label>
                     <div
                       style={{
@@ -555,7 +565,7 @@ export default function BookingPage() {
                         gap: "0.75rem",
                       }}
                     >
-                      {/* Cọc 30% */}
+                      {/* Option 1: Cọc */}
                       <label
                         style={{
                           display: "flex",
@@ -572,7 +582,6 @@ export default function BookingPage() {
                               ? "#f0f9ff"
                               : "white",
                           cursor: "pointer",
-                          transition: "all 0.2s",
                         }}
                       >
                         <input
@@ -586,12 +595,7 @@ export default function BookingPage() {
                               paymentMethod: e.target.value,
                             })
                           }
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            margin: "0",
-                            cursor: "pointer",
-                          }}
+                          style={{ width: "18px", height: "18px" }}
                         />
                         <div>
                           <div
@@ -601,18 +605,17 @@ export default function BookingPage() {
                               color: "#1f2937",
                             }}
                           >
-                            Cọc 30%
+                            Đặt cọc 30%
                           </div>
                           <div
                             style={{ fontSize: "0.75rem", color: "#6b7280" }}
                           >
-                            Đặt cọc 30% giá trị đơn hàng (
-                            {depositAmount.toLocaleString()} VND)
+                            Thanh toán trước {formatCurrency(depositAmount)}
                           </div>
                         </div>
                       </label>
 
-                      {/* Trả hết */}
+                      {/* Option 2: Full */}
                       <label
                         style={{
                           display: "flex",
@@ -629,7 +632,6 @@ export default function BookingPage() {
                               ? "#f0f9ff"
                               : "white",
                           cursor: "pointer",
-                          transition: "all 0.2s",
                         }}
                       >
                         <input
@@ -643,12 +645,7 @@ export default function BookingPage() {
                               paymentMethod: e.target.value,
                             })
                           }
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            margin: "0",
-                            cursor: "pointer",
-                          }}
+                          style={{ width: "18px", height: "18px" }}
                         />
                         <div>
                           <div
@@ -658,18 +655,17 @@ export default function BookingPage() {
                               color: "#1f2937",
                             }}
                           >
-                            Trả hết
+                            Thanh toán hết
                           </div>
                           <div
                             style={{ fontSize: "0.75rem", color: "#6b7280" }}
                           >
-                            Thanh toán 100% giá trị đơn hàng (
-                            {totalAmount.toLocaleString()} VND)
+                            Thanh toán 100% giá trị đơn hàng
                           </div>
                         </div>
                       </label>
 
-                      {/* Thanh toán sau */}
+                      {/* Option 3: Counter */}
                       <label
                         style={{
                           display: "flex",
@@ -686,7 +682,6 @@ export default function BookingPage() {
                               ? "#f0f9ff"
                               : "white",
                           cursor: "pointer",
-                          transition: "all 0.2s",
                         }}
                       >
                         <input
@@ -700,12 +695,7 @@ export default function BookingPage() {
                               paymentMethod: e.target.value,
                             })
                           }
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            margin: "0",
-                            cursor: "pointer",
-                          }}
+                          style={{ width: "18px", height: "18px" }}
                         />
                         <div>
                           <div
@@ -720,60 +710,14 @@ export default function BookingPage() {
                           <div
                             style={{ fontSize: "0.75rem", color: "#6b7280" }}
                           >
-                            Thanh toán toàn bộ khi đến sử dụng dịch vụ
+                            Thanh toán tại quầy/resort
                           </div>
                         </div>
                       </label>
                     </div>
                   </div>
 
-                  {/* Terms and Conditions Checkbox */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "0.75rem",
-                      padding: "1rem",
-                      backgroundColor: "#f8fafc",
-                      borderRadius: "8px",
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={bookingData.agreeTerms}
-                      onChange={(e) =>
-                        setBookingData({
-                          ...bookingData,
-                          agreeTerms: e.target.checked,
-                        })
-                      }
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        marginTop: "0.125rem",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.875rem",
-                          fontWeight: "500",
-                          color: "#374151",
-                          marginBottom: "0.25rem",
-                        }}
-                      >
-                        Tôi đồng ý với điều khoản và điều kiện dịch vụ
-                      </div>
-                      <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                        Bằng cách tick vào ô này, bạn xác nhận đã đọc và đồng ý
-                        với các điều khoản, điều kiện và chính sách bảo mật của
-                        chúng tôi.
-                      </div>
-                    </div>
-                  </div>
-
+                  {/* Ghi chú */}
                   <div>
                     <label
                       style={{
@@ -784,7 +728,7 @@ export default function BookingPage() {
                         fontWeight: "500",
                       }}
                     >
-                      Ghi chú
+                      Ghi chú thêm
                     </label>
                     <textarea
                       value={bookingData.notes}
@@ -794,7 +738,7 @@ export default function BookingPage() {
                           notes: e.target.value,
                         })
                       }
-                      placeholder="Nhập ghi chú cho dịch vụ (nếu có)..."
+                      placeholder="Yêu cầu đặc biệt (nếu có)..."
                       rows={3}
                       style={{
                         width: "100%",
@@ -803,15 +747,7 @@ export default function BookingPage() {
                         borderRadius: "8px",
                         fontSize: "0.875rem",
                         resize: "vertical",
-                        transition: "border-color 0.2s",
                         fontFamily: "inherit",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#3b82f6";
-                        e.target.style.outline = "none";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#d1d5db";
                       }}
                     />
                   </div>
@@ -819,11 +755,15 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Right Column - Payment & Confirmation */}
+            {/* Right Column - Review & Confirmation */}
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "2rem",
+              }}
             >
-              {/* Confirmation Message */}
+              {/* Xác nhận đặt lịch */}
               <div
                 style={{
                   backgroundColor: "#f0f9ff",
@@ -847,13 +787,15 @@ export default function BookingPage() {
                     fontSize: "0.875rem",
                     color: "#0369a1",
                     lineHeight: "1.5",
+                    margin: 0,
                   }}
                 >
-                  Nhân viên sẽ được phân công 1 giờ trước thời gian đã hẹn
+                  Nhân viên sẽ được phân công 1 giờ trước thời gian đã hẹn để
+                  phục vụ bạn tốt nhất.
                 </p>
               </div>
 
-              {/* ĐIỀU KHOẢN THANH TOÁN */}
+              {/* Tổng thanh toán */}
               <div
                 style={{
                   backgroundColor: "white",
@@ -871,56 +813,8 @@ export default function BookingPage() {
                     marginBottom: "1rem",
                   }}
                 >
-                  Điều khoản thanh toán
+                  Chi phí
                 </h3>
-                <div
-                  style={{
-                    fontSize: "0.875rem",
-                    color: "#6b7280",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  <p style={{ marginBottom: "0.75rem" }}>
-                    <strong>1. Thanh toán toàn bộ:</strong> Quý khách sẽ thanh
-                    toán 100% giá trị dịch vụ ngay khi đặt lịch.
-                  </p>
-                  <p style={{ marginBottom: "0.75rem" }}>
-                    <strong>2. Đặt cọc 30%:</strong> Quý khách đặt cọc 30% giá
-                    trị đơn hàng, số tiền còn lại sẽ thanh toán khi sử dụng dịch
-                    vụ.
-                  </p>
-                  <p style={{ marginBottom: "0.75rem" }}>
-                    <strong>3. Thanh toán sau:</strong> Quý khách sẽ thanh toán
-                    toàn bộ khi đến sử dụng dịch vụ tại địa điểm.
-                  </p>
-                  <p style={{ marginBottom: "0" }}>
-                    <strong>Lưu ý:</strong> Trong trường hợp hủy lịch, số tiền
-                    đặt cọc sẽ không được hoàn lại.
-                  </p>
-                </div>
-              </div>
-
-              {/* TỔNG THANH TOÁN */}
-              <div
-                style={{
-                  backgroundColor: "white",
-                  padding: "1.5rem",
-                  borderRadius: "8px",
-                  border: "1px solid #e5e7eb",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "1.125rem",
-                    fontWeight: "600",
-                    color: "#1f2937",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  Tổng thanh toán
-                </h3>
-
                 <div
                   style={{
                     display: "flex",
@@ -933,100 +827,35 @@ export default function BookingPage() {
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                      Tổng tiền dịch vụ
+                      Giá gốc
                     </span>
                     <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>
-                      {service.price.toLocaleString()} VND
+                      {formatCurrency(service.gia)}
                     </span>
                   </div>
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                      Thuế (VAT 10%)
+                      VAT (10%)
                     </span>
                     <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>
-                      {gst.toLocaleString()} VND
+                      {formatCurrency(gst)}
                     </span>
                   </div>
 
-                  {/* Dynamic payment details based on selected method */}
-                  {bookingData.paymentMethod === "deposit" && (
-                    <>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          paddingTop: "0.5rem",
-                          borderTop: "1px dashed #e5e7eb",
-                        }}
-                      >
-                        <span
-                          style={{ fontSize: "0.875rem", color: "#6b7280" }}
-                        >
-                          Đặt cọc (30%)
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "0.875rem",
-                            fontWeight: "500",
-                            color: "#dc2626",
-                          }}
-                        >
-                          {depositAmount.toLocaleString()} VND
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                          Số tiền còn lại (thanh toán sau)
-                        </span>
-                        <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-                          {(totalAmount - depositAmount).toLocaleString()} VND
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {bookingData.paymentMethod === "counter" && (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        paddingTop: "0.5rem",
-                        borderTop: "1px dashed #e5e7eb",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                        Phương thức thanh toán
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "0.875rem",
-                          fontWeight: "500",
-                          color: "#059669",
-                        }}
-                      >
-                        Thanh toán sau
-                      </span>
-                    </div>
-                  )}
+                  <div
+                    style={{
+                      borderTop: "1px dashed #e5e7eb",
+                      margin: "0.5rem 0",
+                    }}
+                  ></div>
 
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      paddingTop: "0.75rem",
-                      borderTop:
-                        bookingData.paymentMethod === "counter"
-                          ? "1px dashed #e5e7eb"
-                          : "2px solid #e5e7eb",
                     }}
                   >
                     <span
@@ -1036,52 +865,143 @@ export default function BookingPage() {
                         color: "#1f2937",
                       }}
                     >
-                      {bookingData.paymentMethod === "deposit"
-                        ? "Số tiền đặt cọc"
-                        : bookingData.paymentMethod === "counter"
-                        ? "Số tiền thanh toán sau"
-                        : "Số tiền thanh toán"}
+                      {bookingData.paymentMethod === "counter"
+                        ? "Tổng tiền (trả sau)"
+                        : "Cần thanh toán ngay"}
                     </span>
                     <span
                       style={{
                         fontSize: "1.25rem",
                         fontWeight: "bold",
-                        color:
-                          bookingData.paymentMethod === "counter"
-                            ? "#059669"
-                            : "#dc2626",
+                        color: "#dc2626",
                       }}
                     >
-                      {bookingData.paymentMethod === "counter"
-                        ? totalAmount.toLocaleString() + " VND"
-                        : finalAmount.toLocaleString() + " VND"}
+                      {formatCurrency(finalAmount)}
                     </span>
                   </div>
-
-                  {bookingData.paymentMethod === "counter" && (
-                    <div
-                      style={{
-                        padding: "0.75rem",
-                        backgroundColor: "#ecfdf5",
-                        borderRadius: "6px",
-                        border: "1px solid #a7f3d0",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "#065f46",
-                          textAlign: "center",
-                          lineHeight: "1.4",
-                          margin: 0,
-                        }}
-                      >
-                        💳 Bạn sẽ thanh toán toàn bộ số tiền khi đến sử dụng
-                        dịch vụ tại địa điểm
-                      </p>
-                    </div>
-                  )}
                 </div>
+              </div>
+
+              {/* Terms Checkbox */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "0.75rem",
+                  padding: "1rem",
+                  backgroundColor: "#f8fafc",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={bookingData.agreeTerms}
+                  onChange={(e) =>
+                    setBookingData({
+                      ...bookingData,
+                      agreeTerms: e.target.checked,
+                    })
+                  }
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    marginTop: "2px",
+                    cursor: "pointer",
+                  }}
+                />
+                <div>
+                  <div
+                    style={{
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      color: "#374151",
+                    }}
+                  >
+                    Tôi đồng ý với điều khoản dịch vụ
+                  </div>
+                  <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                    Xác nhận thông tin trên là chính xác.
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
+                <button
+                  onClick={handleSubmit}
+                  disabled={!bookingData.agreeTerms}
+                  style={{
+                    padding: "1rem 1.5rem",
+                    border: "none",
+                    borderRadius: "8px",
+                    backgroundColor: bookingData.agreeTerms
+                      ? "#dc2626"
+                      : "#9ca3af",
+                    color: "white",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    cursor: bookingData.agreeTerms ? "pointer" : "not-allowed",
+                    transition: "all 0.2s ease",
+                    ...vietnameseFont,
+                  }}
+                >
+                  Xác nhận đặt lịch
+                </button>
+
+                <button
+                  onClick={handleCancel}
+                  style={{
+                    padding: "1rem 1.5rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "8px",
+                    backgroundColor: "white",
+                    color: "#6b7280",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    ...vietnameseFont,
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = "#f9fafb";
+                    e.target.style.borderColor = "#9ca3af";
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = "white";
+                    e.target.style.borderColor = "#d1d5db";
+                  }}
+                >
+                  Hủy
+                </button>
+              </div>
+
+              {/* Insurance Program */}
+              <div
+                style={{
+                  backgroundColor: "#fef3c7",
+                  padding: "1rem",
+                  borderRadius: "8px",
+                  border: "1px solid #fcd34d",
+                  textAlign: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#92400e",
+                    margin: 0,
+                  }}
+                >
+                  Yêu cầu của bạn đủ điều kiện cho{" "}
+                  <strong>Chương trình Bảo hiểm ServiceHub</strong>
+                </p>
               </div>
 
               {/* Help Section */}
@@ -1091,7 +1011,6 @@ export default function BookingPage() {
                   padding: "1.5rem",
                   borderRadius: "8px",
                   border: "1px solid #e5e7eb",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                 }}
               >
                 <h3
@@ -1133,101 +1052,6 @@ export default function BookingPage() {
                     1900 1234
                   </span>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                }}
-              >
-                <button
-                  onClick={handleSubmit}
-                  disabled={!bookingData.agreeTerms}
-                  style={{
-                    padding: "1rem 1.5rem",
-                    border: "none",
-                    borderRadius: "8px",
-                    backgroundColor: bookingData.agreeTerms
-                      ? "#dc2626"
-                      : "#9ca3af",
-                    color: "white",
-                    fontSize: "1rem",
-                    fontWeight: "600",
-                    cursor: bookingData.agreeTerms ? "pointer" : "not-allowed",
-                    transition: "all 0.2s ease",
-                    boxShadow: bookingData.agreeTerms
-                      ? "0 2px 4px rgba(220, 38, 38, 0.2)"
-                      : "none",
-                  }}
-                  onMouseOver={(e) => {
-                    if (bookingData.agreeTerms) {
-                      e.target.style.backgroundColor = "#b91c1c";
-                      e.target.style.transform = "translateY(-1px)";
-                      e.target.style.boxShadow =
-                        "0 4px 8px rgba(220, 38, 38, 0.3)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (bookingData.agreeTerms) {
-                      e.target.style.backgroundColor = "#dc2626";
-                      e.target.style.transform = "translateY(0)";
-                      e.target.style.boxShadow =
-                        "0 2px 4px rgba(220, 38, 38, 0.2)";
-                    }
-                  }}
-                >
-                  Đặt lịch
-                </button>
-
-                <button
-                  onClick={handleCancel}
-                  style={{
-                    padding: "1rem 1.5rem",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "8px",
-                    backgroundColor: "white",
-                    color: "#6b7280",
-                    fontSize: "1rem",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = "#f9fafb";
-                    e.target.style.borderColor = "#9ca3af";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.borderColor = "#d1d5db";
-                  }}
-                >
-                  Hủy
-                </button>
-              </div>
-
-              {/* Insurance Program */}
-              <div
-                style={{
-                  backgroundColor: "#fef3c7",
-                  padding: "1rem",
-                  borderRadius: "8px",
-                  border: "1px solid #fcd34d",
-                  textAlign: "center",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#92400e",
-                    lineHeight: "1.4",
-                  }}
-                >
-                  Yêu cầu của bạn đủ điều kiện cho{" "}
-                  <strong>Chương trình Bảo hiểm ServiceHub</strong>
-                </p>
               </div>
             </div>
           </div>
