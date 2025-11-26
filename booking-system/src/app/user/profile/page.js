@@ -1,24 +1,43 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MainContent from "@/components/Layout/MainContent";
+import React, { useState, useEffect } from "react";
 
 export default function UserProfilePage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    fullName: "Nguyễn Văn A",
-    email: "nguyenvana@example.com",
-    phone: "0912345678",
-    address: "456 Lê Lợi, Quận 1, TP.HCM",
-    dateOfBirth: "15/03/1990",
-    gender: "male",
-  });
-
-  const [socialMedia, setSocialMedia] = useState({
-    facebook: "nguyenvana.profile",
-    instagram: "nguyen_van_a",
-    zalo: "0912345678",
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState([]);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/khach-hang/profile",
+           {
+            method: "GET",
+            headers: {
+               Authorization: 'Bearer '+ localStorage.getItem("authToken"),
+            },
+          }
+        );
+        if (!response.ok) {
+          console.warn("API chưa sẵn sàng, dùng dữ liệu mẫu.");
+          setIsLoading(false);
+          return;
+        }
+        const result = await response.json();
+        if (result.status === true) {
+          console.log("Dữ liệu dịch vụ đã được tải từ API ", result.data);
+          setFormData(result.data);
+        }
+      } catch (err) {
+        console.error("Lỗi API:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  },[]) ;
 
   const [preferences, setPreferences] = useState({
     notifications: true,
@@ -53,7 +72,7 @@ export default function UserProfilePage() {
               color: "#1f2937",
             }}
           >
-            Hồ sơ cá nhân 👤
+            Hồ sơ cá nhân của {formData.ho_ten}
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Quản lý thông tin và tài khoản cá nhân của bạn
@@ -131,9 +150,9 @@ export default function UserProfilePage() {
               {isEditing ? (
                 <input
                   type="text"
-                  value={formData.fullName}
+                  value={formData.ho_ten}
                   onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
+                    setFormData({ ...formData, ho_ten: e.target.value })
                   }
                   style={{
                     width: "100%",
@@ -154,7 +173,7 @@ export default function UserProfilePage() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  {formData.fullName}
+                  {formData.ho_ten}
                 </div>
               )}
             </div>
@@ -182,9 +201,9 @@ export default function UserProfilePage() {
                 {isEditing ? (
                   <input
                     type="tel"
-                    value={formData.phone}
+                    value={formData.so_dien_thoai}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({ ...formData, so_dien_thoai: e.target.value })
                     }
                     style={{
                       width: "100%",
@@ -205,7 +224,7 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.phone}
+                    {formData.so_dien_thoai}
                   </div>
                 )}
               </div>
@@ -276,10 +295,10 @@ export default function UserProfilePage() {
                 </label>
                 {isEditing ? (
                   <input
-                    type="text"
-                    value={formData.dateOfBirth}
+                    type="date" 
+                    value={formData.ngay_sinh}
                     onChange={(e) =>
-                      setFormData({ ...formData, dateOfBirth: e.target.value })
+                      setFormData({ ...formData, ngay_sinh: e.target.value })
                     }
                     style={{
                       width: "100%",
@@ -287,8 +306,9 @@ export default function UserProfilePage() {
                       border: "1px solid #d1d5db",
                       borderRadius: "6px",
                       fontSize: "0.875rem",
+                      fontFamily: "inherit", 
                     }}
-                    placeholder="DD/MM/YYYY"
+
                   />
                 ) : (
                   <div
@@ -300,7 +320,12 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.dateOfBirth}
+                    {/* 3. Khi hiển thị text thì format(VD: DD/MM/YYYY) */}
+                    {formData.ngay_sinh
+                      ? new Date(formData.ngay_sinh).toLocaleDateString(
+                          "vi-VN"
+                        )
+                      : "Chưa cập nhật"}
                   </div>
                 )}
               </div>
@@ -319,9 +344,9 @@ export default function UserProfilePage() {
                 </label>
                 {isEditing ? (
                   <select
-                    value={formData.gender}
+                    value={formData.gioi_tinh}
                     onChange={(e) =>
-                      setFormData({ ...formData, gender: e.target.value })
+                      setFormData({ ...formData, gioi_tinh: e.target.value })
                     }
                     style={{
                       width: "100%",
@@ -331,9 +356,9 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    <option value="male">Nam</option>
-                    <option value="female">Nữ</option>
-                    <option value="other">Khác</option>
+                    <option value="0">Nam</option>
+                    <option value="1">Nữ</option>
+                    <option value="2">Khác</option>
                   </select>
                 ) : (
                   <div
@@ -345,11 +370,7 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.gender === "male"
-                      ? "Nam"
-                      : formData.gender === "female"
-                      ? "Nữ"
-                      : "Khác"}
+                    {formData.gioi_tinh === "0"? "Nam": formData.gioi_tinh === "1"? "Nữ":formData.gioi_tinh === 2 ? "Khác":"Chưa cập nhật"}
                   </div>
                 )}
               </div>
@@ -371,9 +392,9 @@ export default function UserProfilePage() {
               {isEditing ? (
                 <input
                   type="text"
-                  value={formData.address}
+                  value={formData.dia_chi}
                   onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
+                    setFormData({ ...formData, dia_chi: e.target.value })
                   }
                   style={{
                     width: "100%",
@@ -394,7 +415,7 @@ export default function UserProfilePage() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  {formData.address}
+                  {formData.dia_chi || "chưa cập nhật"}
                 </div>
               )}
             </div>

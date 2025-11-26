@@ -151,8 +151,7 @@ export default function UserDashboard() {
             Xin chào, {user?.name || "Người dùng"}! 👋
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
-            Chúc bạn một ngày tốt lành. Bạn có {upcomingAppointments.length}{" "}
-            lịch hẹn sắp tới.
+            Chúc bạn một ngày tốt lành. Bạn có <b>{lich.so_lich_sap_toi}</b> lịch hẹn sắp tới.
           </p>
         </div>
 
