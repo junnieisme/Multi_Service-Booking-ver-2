@@ -6,11 +6,12 @@ import MainContent from "@/components/Layout/MainContent";
 
 export default function PaymentPage() {
   const router = useRouter();
-  const [paymentInfo, setPaymentInfo] = useState(null);
+  const [paymentInfo, setPaymentInfo] = useState();
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
+    // const info = localStorage.getItem("paymentInfo");
     const info = localStorage.getItem("paymentInfo");
     if (info) {
       try {

@@ -8,81 +8,109 @@ export default function ServiceDetail() {
   const router = useRouter();
   const [service, setService] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   // Mock data - Cấu trúc mới đồng bộ với Homepage
-  const servicesData = {
-    1: {
-      id: 1,
-      loai_dich_vu: "Lưu trú",
-      id_nha_cung_cap: 1,
-      ten_thuong_hieu: "InterContinental Danang Sun Peninsula Resort",
-      ten_dich_vu: "Combo resort cho 3 ngày 2 đêm và nhiều tiện ích khác",
-      hinh_anh:
-        "https://th.bing.com/th/id/R.ec9929b9c3c3dd8198ca20d246d22bcf?rik=RWQv1vt62sUsrA&pid=ImgRaw&r=0",
-      tinh_thanh: "Đà Nẵng",
-      dia_chi_cu_the: "Bãi Bắc bán đảo Sơn Trà",
-      mo_ta_ngan: "Trải nghiệm nghỉ dưỡng đẳng cấp 5 sao ven biển",
-      mo_ta_chi_tiet: `Phòng ở:
-Thời gian lưu trú: Thường có combo cho 3 ngày 2 đêm.
-Tiện nghi: Phòng nghỉ có thể bao gồm ăn sáng buffet, trà, cafe, nước suối miễn phí hàng ngày, tùy theo gói combo.
+//   const servicesData = {
+//     1: {
+//       id: 1,
+//       loai_dich_vu: "Lưu trú",
+//       id_nha_cung_cap: 1,
+//       ten_thuong_hieu: "InterContinental Danang Sun Peninsula Resort",
+//       ten_dich_vu: "Combo resort cho 3 ngày 2 đêm và nhiều tiện ích khác",
+//       hinh_anh:
+//         "https://th.bing.com/th/id/R.ec9929b9c3c3dd8198ca20d246d22bcf?rik=RWQv1vt62sUsrA&pid=ImgRaw&r=0",
+//       tinh_thanh: "Đà Nẵng",
+//       dia_chi_cu_the: "Bãi Bắc bán đảo Sơn Trà",
+//       mo_ta_ngan: "Trải nghiệm nghỉ dưỡng đẳng cấp 5 sao ven biển",
+//       mo_ta_chi_tiet: `Phòng ở:
+// Thời gian lưu trú: Thường có combo cho 3 ngày 2 đêm.
+// Tiện nghi: Phòng nghỉ có thể bao gồm ăn sáng buffet, trà, cafe, nước suối miễn phí hàng ngày, tùy theo gói combo.
 
-Hoạt động & Giải trí:
-Tham quan: Vé vào các điểm du lịch lân cận như Grand World, Thị trấn Hoàng Hôn, Chùa Hộ Quốc, Sunset Sanato (tùy địa điểm).
-Tour: Bao gồm tour cano khám phá các đảo, lặn ngắm san hô.
-Chơi Golf: Gói combo có thể bao gồm 1 vòng chơi golf 18 hố.
-Spa: Tái tạo năng lượng với các gói spa, tùy thuộc vào loại combo.
+// Hoạt động & Giải trí:
+// Tham quan: Vé vào các điểm du lịch lân cận như Grand World, Thị trấn Hoàng Hôn, Chùa Hộ Quốc, Sunset Sanato (tùy địa điểm).
+// Tour: Bao gồm tour cano khám phá các đảo, lặn ngắm san hô.
+// Chơi Golf: Gói combo có thể bao gồm 1 vòng chơi golf 18 hố.
+// Spa: Tái tạo năng lượng với các gói spa, tùy thuộc vào loại combo.
 
-Dịch vụ đi kèm:
-Đưa đón sân bay: Xe đón/tiễn tại sân bay (tùy thuộc vào địa điểm và gói combo).
-Di chuyển nội bộ: Xe điện di chuyển trong khuôn viên resort.
-Tiện ích chung: Sử dụng miễn phí hồ bơi, bãi biển riêng, phòng gym, khu xông hơi jacuzzi, khu vui chơi trẻ em.
+// Dịch vụ đi kèm:
+// Đưa đón sân bay: Xe đón/tiễn tại sân bay (tùy thuộc vào địa điểm và gói combo).
+// Di chuyển nội bộ: Xe điện di chuyển trong khuôn viên resort.
+// Tiện ích chung: Sử dụng miễn phí hồ bơi, bãi biển riêng, phòng gym, khu xông hơi jacuzzi, khu vui chơi trẻ em.
 
-Ưu đãi khác:
-Giảm giá cho các dịch vụ tại chỗ trong khách sạn.
-Ưu tiên nhận phòng sớm, trả phòng muộn (nếu còn phòng).
-Ưu tiên nâng hạng phòng (nếu còn phòng).`,
-      gia: "5,000,000 VND",
-      gia_goc: "6,500,000 VND",
-      danh_gia: 4.9,
-      luot_danh_gia: 320,
-      thoi_gian: "Check-in 14:00",
-      trang_thai: "Còn phòng",
-    },
-    2: {
-      id: 2,
-      loai_dich_vu: "Ẩm thực",
-      id_nha_cung_cap: 2,
-      ten_thuong_hieu: "Madame Lan Restaurant",
-      ten_dich_vu: "Set menu đặc sản miền Trung",
-      hinh_anh:
-        "https://dulichkhampha24.com/wp-content/uploads/2020/01/nha-hang-madame-lan-da-nang-1.jpg",
-      tinh_thanh: "Đà Nẵng",
-      dia_chi_cu_the: "04 Bạch Đằng, Thạch Thang, Hải Châu",
-      mo_ta_ngan: "Ẩm thực Việt Nam truyền thống",
-      mo_ta_chi_tiet:
-        "Không gian ấm cúng bên bờ sông Hàn, phục vụ các món ăn đặc sản ba miền.\n\n• Bánh xèo miền Trung\n• Mì Quảng đặc biệt\n• Không gian sân vườn",
-      gia: "300,000 VND",
-      gia_goc: "0 VND",
-      danh_gia: 4.5,
-      luot_danh_gia: 150,
-      thoi_gian: "2 giờ",
-      trang_thai: "Còn bàn",
-    },
+// Ưu đãi khác:
+// Giảm giá cho các dịch vụ tại chỗ trong khách sạn.
+// Ưu tiên nhận phòng sớm, trả phòng muộn (nếu còn phòng).
+// Ưu tiên nâng hạng phòng (nếu còn phòng).`,
+//       gia: "5,000,000 VND",
+//       gia_goc: "6,500,000 VND",
+//       danh_gia: 4.9,
+//       luot_danh_gia: 320,
+//       thoi_gian: "Check-in 14:00",
+//       trang_thai: "Còn phòng",
+//     },
+//     2: {
+//       id: 2,
+//       loai_dich_vu: "Ẩm thực",
+//       id_nha_cung_cap: 2,
+//       ten_thuong_hieu: "Madame Lan Restaurant",
+//       ten_dich_vu: "Set menu đặc sản miền Trung",
+//       hinh_anh:
+//         "https://dulichkhampha24.com/wp-content/uploads/2020/01/nha-hang-madame-lan-da-nang-1.jpg",
+//       tinh_thanh: "Đà Nẵng",
+//       dia_chi_cu_the: "04 Bạch Đằng, Thạch Thang, Hải Châu",
+//       mo_ta_ngan: "Ẩm thực Việt Nam truyền thống",
+//       mo_ta_chi_tiet:
+//         "Không gian ấm cúng bên bờ sông Hàn, phục vụ các món ăn đặc sản ba miền.\n\n• Bánh xèo miền Trung\n• Mì Quảng đặc biệt\n• Không gian sân vườn",
+//       gia: "300,000 VND",
+//       gia_goc: "0 VND",
+//       danh_gia: 4.5,
+//       luot_danh_gia: 150,
+//       thoi_gian: "2 giờ",
+//       trang_thai: "Còn bàn",
+//     },
+//   };
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/chi-tiet-thuong-hieu/get-data-by-id/" + params.id
+      );
+
+      if (!response.ok) {
+        console.warn("Không thể kết nối API");
+        router.push("/"); // chuyển trang nếu API lỗi
+        return;
+      }
+
+      const result = await response.json();
+
+      // Kiểm tra trạng thái trả về từ API
+      if (result.status === true && result.data) {
+        console.log("Dữ liệu nhận từ API: ", result.data);
+        setService(result.data[0]);   // 👉 set dữ liệu API vào state
+      } else {
+        console.warn("Không có dữ liệu cho ID này");
+        router.push("/"); // chuyển về trang chủ
+      }
+
+    } catch (err) {
+      console.error("Lỗi API:", err);
+      router.push("/");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const serviceId = params.id;
-      const serviceData = servicesData[serviceId];
-      if (serviceData) {
-        setService(serviceData);
-      } else {
-        router.push("/");
-      }
-      setIsLoading(false);
-    }, 500);
-  }, [params.id, router]);
+  // Gọi API với params.id
+  const timer = setTimeout(() => {
+    fetchData();
+  }, 300); // Delay nhẹ cho mượt UI (tùy chọn)
+
+  return () => clearTimeout(timer);
+
+}, [params.id, router]);
 
   const handleBookAppointment = () => {
     router.push(`/user/booking?id=${service.id}`);
@@ -96,7 +124,6 @@ Giảm giá cho các dịch vụ tại chỗ trong khách sạn.
       </div>
     );
   }
-
   if (!service) {
     return (
       <div style={{ textAlign: "center", padding: "4rem" }}>
@@ -414,25 +441,7 @@ Giảm giá cho các dịch vụ tại chỗ trong khách sạn.
               fontSize: "1rem",
             }}
           >
-            {service.mo_ta_chi_tiet.split("\n").map((paragraph, index) => (
-              <p
-                key={index}
-                style={{
-                  marginBottom:
-                    paragraph.trim().startsWith("•") ||
-                    paragraph.trim().endsWith(":")
-                      ? "0.5rem"
-                      : "1rem",
-                  paddingLeft: paragraph.trim().startsWith("•") ? "1rem" : "0",
-                  fontWeight: paragraph.trim().endsWith(":")
-                    ? "bold"
-                    : "normal", // In đậm các tiêu đề con
-                  color: paragraph.trim().endsWith(":") ? "#374151" : "#4b5563",
-                }}
-              >
-                {paragraph}
-              </p>
-            ))}
+            {service.mo_ta_dai}
           </div>
         </div>
       </div>

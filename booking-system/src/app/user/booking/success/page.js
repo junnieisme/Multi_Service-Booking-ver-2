@@ -25,10 +25,10 @@ export default function BookingSuccessPage() {
       } catch (error) {
         console.error("Error parsing bookingInfo:", error);
         setBookingInfo({
-          fullName: "Nguyễn Văn A",
-          phone: "0123456789",
-          date: "06/02/2025",
-          time: "14:00",
+          ho_ten: "Nguyễn Văn A",
+          so_dien_thoai: "0123456789",
+          ngay_dat_lich: "06/02/2025",
+          thoi_gian: "14:00",
           service: { name: "Cắt tóc nam", price: 150000 },
           totalAmount: 165000,
           bookingId: "BK123456",
@@ -251,7 +251,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Mã đặt lịch:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.bookingId || `BK${Date.now()}`}
+                    {bookingInfo.bookingId || `BK${ngay_dat_lich.now()}`}
                   </span>
                 </div>
 
@@ -269,7 +269,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Thời gian:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.date} - {bookingInfo.time}
+                    {bookingInfo.ngay_dat_lich} - {bookingInfo.thoi_gian}
                   </span>
                 </div>
 
@@ -278,7 +278,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Khách hàng:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.fullName || "N/A"}
+                    {bookingInfo.ho_ten || "N/A"}
                   </span>
                 </div>
 
@@ -287,7 +287,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Số điện thoại:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.phone || "N/A"}
+                    {bookingInfo.so_dien_thoai || "N/A"}
                   </span>
                 </div>
 
