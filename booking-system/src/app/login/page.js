@@ -38,7 +38,9 @@ export default function LoginPage() {
             JSON.stringify({
               name: result.ten,
               email: formData.email,
+              so_dien_thoai: result.so_dien_thoai,
               role: activeTab,
+              id : result.id,
             })
           );
           alert(result.message);
@@ -71,7 +73,9 @@ export default function LoginPage() {
             JSON.stringify({
               name: result.ten,
               email: formData.email,
+              so_dien_thoai: result.so_dien_thoai,
               role: activeTab,
+              id : result.id,
             })
           );
           alert("Đăng nhập thành công!");

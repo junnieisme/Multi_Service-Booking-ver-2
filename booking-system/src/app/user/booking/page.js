@@ -7,15 +7,20 @@ export default function BookingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const serviceId = searchParams.get("id");
-
+  const khachHangId = JSON.parse(localStorage.getItem("user")).id;
+  const so_dien_thoai = JSON.parse(localStorage.getItem("user")).so_dien_thoai;
   const [service, setService] = useState(null);
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   // Font chữ chuẩn cho Tiếng Việt
   const vietnameseFont = {
     fontFamily:
       "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
   };
+  // paymentMethod: "deposit" đặt cộc => chuyển qua trang thanh toán
+  // paymentMethod: "full"    đại gia thanh toán hết => chuyển qua trang thanh toán
+  // paymentMethod: "counter" chưa trả tiền => chuyển qua đặt lịch thành công
 
   // Hàm lấy ngày hiện tại format YYYY-MM-DD
   const getTodayString = () => {
@@ -27,60 +32,87 @@ export default function BookingPage() {
   };
 
   const [bookingData, setBookingData] = useState({
-    fullName: "",
-    phone: "",
-    address: "",
-    date: getTodayString(),
-    time: "14:00",
-    notes: "",
+    ho_ten: JSON.parse(localStorage.getItem("user")).name,
+    id_khach_hang: khachHangId,
+    so_dien_thoai: so_dien_thoai,
+    id_chi_tiet_thuong_hieu: serviceId,
+    ngay_dat_lich: getTodayString(),
+    thoi_gian: "14:00",
+    ghi_chu: "",
     paymentMethod: "deposit",
     agreeTerms: false,
+    tong_tien_thanh_toan: 0,
+    tong_tien_da_tra: 0,
   });
 
   // Mock data
-  const servicesData = {
-    1: {
-      id: 1,
-      loai_dich_vu: "Lưu trú",
-      ten_thuong_hieu: "InterContinental Danang",
-      ten_dich_vu: "Combo resort cho 3 ngày 2 đêm và nhiều tiện ích khác",
-      hinh_anh:
-        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/43859674.jpg?k=04578449670209583432815834e3761046669662656640161662653705512240&o=&hp=1",
-      tinh_thanh: "Đà Nẵng",
-      dia_chi_cu_the: "Bãi Bắc bán đảo Sơn Trà",
-      gia: 5000000,
-      thoi_gian: "Check-in 14:00",
-    },
-    2: {
-      id: 2,
-      loai_dich_vu: "Ẩm thực",
-      ten_thuong_hieu: "Madame Lan Restaurant",
-      ten_dich_vu: "Set menu đặc sản miền Trung cho gia đình",
-      hinh_anh:
-        "https://dulichkhampha24.com/wp-content/uploads/2020/01/nha-hang-madame-lan-da-nang-1.jpg",
-      tinh_thanh: "Đà Nẵng",
-      dia_chi_cu_the: "04 Bạch Đằng, Hải Châu",
-      gia: 300000,
-      thoi_gian: "2 giờ",
-    },
-  };
-
+  // const servicesData = {
+  //   1: {
+  //     id: 1,
+  //     loai_dich_vu: "Lưu trú",
+  //     ten_thuong_hieu: "InterContinental Danang",
+  //     ten_dich_vu: "Combo resort cho 3 ngày 2 đêm và nhiều tiện ích khác",
+  //     hinh_anh:
+  //       "https://cf.bstatic.com/xdata/images/hotel/max1024x768/43859674.jpg?k=04578449670209583432815834e3761046669662656640161662653705512240&o=&hp=1",
+  //     tinh_thanh: "Đà Nẵng",
+  //     dia_chi_cu_the: "Bãi Bắc bán đảo Sơn Trà",
+  //     don_gia: 5000000,
+  //     thoi_don_gian: "Check-in 14:00",
+  //   },
+  //   2: {
+  //     id: 2,
+  //     loai_dich_vu: "Ẩm thực",
+  //     ten_thuong_hieu: "Madame Lan Restaurant",
+  //     ten_dich_vu: "Set menu đặc sản miền Trung cho don_gia đình",
+  //     hinh_anh:
+  //       "https://dulichkhampha24.com/wp-content/uploads/2020/01/nha-hang-madame-lan-da-nang-1.jpg",
+  //     tinh_thanh: "Đà Nẵng",
+  //     dia_chi_cu_the: "04 Bạch Đằng, Hải Châu",
+  //     don_gia: 300000,
+  //     thoi_don_gian: "2 giờ",
+  //   },
+  // };
   useEffect(() => {
-    setTimeout(() => {
-      const serviceData = servicesData[serviceId];
-      if (serviceData) {
-        setService(serviceData);
-        setBookingData((prev) => ({
-          ...prev,
-          address: `${serviceData.dia_chi_cu_the}, ${serviceData.tinh_thanh}`,
-        }));
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/chi-tiet-thuong-hieu/get-data-by-id/" +
+            serviceId
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          router.push("/");
+          return;
+        }
+
+        const result = await response.json();
+
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true && result.data) {
+          console.log("Dữ liệu nhận từ API: ", result.data);
+          setService(result.data[0]); // 👉 set dữ liệu API vào state
+        } else {
+          console.warn("Không có dữ liệu cho ID này");
+          router.push("/"); // chuyển về trang chủ
+        }
+      } catch (err) {
+        console.error("Lỗi API:", err);
+        router.push("/");
+      } finally {
+        setIsLoading(false);
       }
-    }, 500);
+    };
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 300); // Delay nhẹ cho mượt UI (tùy chọn)
+
+    return () => clearTimeout(timer);
   }, [serviceId]);
 
   // Tính toán tiền
-  const gst = service ? service.gia * 0.1 : 0;
-  const totalAmount = service ? service.gia + gst : 0;
+  const gst = service ? service.don_gia * 0.1 : 0;
+  const totalAmount = service ? Number(service.don_gia) + gst : 0;
   const depositAmount = service ? totalAmount * 0.3 : 0;
 
   const getFinalAmount = () => {
@@ -96,7 +128,10 @@ export default function BookingPage() {
   };
 
   const finalAmount = getFinalAmount();
-
+  {
+    bookingData.tong_tien_da_tra = finalAmount;
+    bookingData.tong_tien_thanh_toan = totalAmount;
+  }
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -109,17 +144,17 @@ export default function BookingPage() {
     let newErrors = {};
     let isValid = true;
 
-    if (!bookingData.fullName.trim()) {
-      newErrors.fullName = "Vui lòng nhập họ và tên.";
+    if (!bookingData.ho_ten.trim()) {
+      newErrors.ho_ten = "Vui lòng nhập họ và tên.";
       isValid = false;
     }
 
-    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
-    if (!bookingData.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại.";
+    const so_dien_thoaiRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+    if (!bookingData.so_dien_thoai.trim()) {
+      newErrors.so_dien_thoai = "Vui lòng nhập số điện thoại.";
       isValid = false;
-    } else if (!phoneRegex.test(bookingData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ.";
+    } else if (!so_dien_thoaiRegex.test(bookingData.so_dien_thoai)) {
+      newErrors.so_dien_thoai = "Số điện thoại không hợp lệ.";
       isValid = false;
     }
 
@@ -141,13 +176,35 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async () => {
-    if (validateForm()) {
-      if (bookingData.paymentMethod === "counter") {
-        router.push("/user/booking/success");
-      } else {
-        router.push("/user/checkout");
+    console.log("Dữ liệu đặt lịch gửi đi:", bookingData); 
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/dat-lich/them-moi",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify(bookingData),
       }
+    );
+    const result = await response.json();
+    if (response.ok) {
+      if (result.status === true) {
+         alert(result.message || "Đặt lịch thành công!");
+    } else {
+      setError(result.message || "Đặt lịch thất bại. Vui lòng thử lại.");
     }
+  }else{
+      setError(result.message);
+  }
+    // if (validateForm()) {
+    //   if (bookingData.paymentMethod === "counter") {
+    //     router.push("/user/booking/success"); // chưa thanh toán
+    //   } else {
+    //     router.push("/user/checkout"); // đã đặt cọc hoặc thanh toán toàn bộ
+    //   }
+    // }
   };
 
   const handleCancel = () => {
@@ -344,18 +401,18 @@ export default function BookingPage() {
                     </label>
                     <input
                       type="text"
-                      value={bookingData.fullName}
+                      value={bookingData.ho_ten}
                       onChange={(e) =>
                         setBookingData({
                           ...bookingData,
-                          fullName: e.target.value,
+                          ho_ten: e.target.value,
                         })
                       }
-                      placeholder="Nguyễn Văn A"
+                      placeholder="Họ tên người đặt lịch"
                       style={{
                         width: "100%",
                         padding: "0.875rem",
-                        border: errors.fullName
+                        border: errors.ho_ten
                           ? "1px solid red"
                           : "1px solid #d1d5db",
                         borderRadius: "8px",
@@ -363,7 +420,7 @@ export default function BookingPage() {
                         fontFamily: "inherit",
                       }}
                     />
-                    {errors.fullName && (
+                    {errors.ho_ten && (
                       <span
                         style={{
                           color: "red",
@@ -371,7 +428,7 @@ export default function BookingPage() {
                           marginTop: "4px",
                         }}
                       >
-                        {errors.fullName}
+                        {errors.ho_ten}
                       </span>
                     )}
                   </div>
@@ -391,18 +448,18 @@ export default function BookingPage() {
                     </label>
                     <input
                       type="tel"
-                      value={bookingData.phone}
+                      value={bookingData.so_dien_thoai}
                       onChange={(e) =>
                         setBookingData({
                           ...bookingData,
-                          phone: e.target.value,
+                          so_dien_thoai: e.target.value,
                         })
                       }
                       placeholder="0912345678"
                       style={{
                         width: "100%",
                         padding: "0.875rem",
-                        border: errors.phone
+                        border: errors.so_dien_thoai
                           ? "1px solid red"
                           : "1px solid #d1d5db",
                         borderRadius: "8px",
@@ -410,7 +467,7 @@ export default function BookingPage() {
                         fontFamily: "inherit",
                       }}
                     />
-                    {errors.phone && (
+                    {errors.so_dien_thoai && (
                       <span
                         style={{
                           color: "red",
@@ -418,7 +475,7 @@ export default function BookingPage() {
                           marginTop: "4px",
                         }}
                       >
-                        {errors.phone}
+                        {errors.so_dien_thoai}
                       </span>
                     )}
                   </div>
@@ -438,7 +495,7 @@ export default function BookingPage() {
                     </label>
                     <input
                       type="text"
-                      value={bookingData.address}
+                      value={service.dia_chi_cu_the + ", " + service.tinh_thanh}
                       readOnly
                       style={{
                         width: "100%",
@@ -478,17 +535,17 @@ export default function BookingPage() {
                       <input
                         type="date"
                         min={getTodayString()}
-                        value={bookingData.date}
+                        value={bookingData.ngay_dat_lich}
                         onChange={(e) =>
                           setBookingData({
                             ...bookingData,
-                            date: e.target.value,
+                            ngay_dat_lich: e.target.value,
                           })
                         }
                         style={{
                           width: "100%",
                           padding: "0.875rem",
-                          border: errors.date
+                          border: errors.ngay_dat_lich
                             ? "1px solid red"
                             : "1px solid #d1d5db",
                           borderRadius: "8px",
@@ -497,7 +554,7 @@ export default function BookingPage() {
                           fontFamily: "inherit",
                         }}
                       />
-                      {errors.date && (
+                      {errors.ngay_dat_lich && (
                         <span
                           style={{
                             color: "red",
@@ -505,7 +562,7 @@ export default function BookingPage() {
                             marginTop: "4px",
                           }}
                         >
-                          {errors.date}
+                          {errors.ngay_dat_lich}
                         </span>
                       )}
                     </div>
@@ -524,11 +581,11 @@ export default function BookingPage() {
                       </label>
                       <input
                         type="time"
-                        value={bookingData.time}
+                        value={bookingData.thoi_gian}
                         onChange={(e) =>
                           setBookingData({
                             ...bookingData,
-                            time: e.target.value,
+                            thoi_gian: e.target.value,
                           })
                         }
                         style={{
@@ -731,11 +788,11 @@ export default function BookingPage() {
                       Ghi chú thêm
                     </label>
                     <textarea
-                      value={bookingData.notes}
+                      value={bookingData.ghi_chu}
                       onChange={(e) =>
                         setBookingData({
                           ...bookingData,
-                          notes: e.target.value,
+                          ghi_chu: e.target.value,
                         })
                       }
                       placeholder="Yêu cầu đặc biệt (nếu có)..."
@@ -790,8 +847,8 @@ export default function BookingPage() {
                     margin: 0,
                   }}
                 >
-                  Nhân viên sẽ được phân công 1 giờ trước thời gian đã hẹn để
-                  phục vụ bạn tốt nhất.
+                  Nhân viên sẽ được phân công xác nhận thời gian đã hẹn để phục
+                  vụ bạn tốt nhất.
                 </p>
               </div>
 
@@ -830,7 +887,7 @@ export default function BookingPage() {
                       Giá gốc
                     </span>
                     <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>
-                      {formatCurrency(service.gia)}
+                      {formatCurrency(service.don_gia)}
                     </span>
                   </div>
                   <div
