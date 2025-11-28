@@ -18,14 +18,12 @@ export default function BookingSuccessPage() {
       try {
         const parsedInfo = JSON.parse(info);
         setBookingInfo(parsedInfo);
-        // CHỈ remove sau khi đã hiển thị thành công
         setTimeout(() => {
           localStorage.removeItem("bookingInfo");
           localStorage.removeItem("paymentInfo");
         }, 1000);
       } catch (error) {
         console.error("Error parsing bookingInfo:", error);
-        // Fallback data để test CSS
         setBookingInfo({
           ho_ten: "Nguyễn Văn A",
           so_dien_thoai: "0123456789",
@@ -39,8 +37,6 @@ export default function BookingSuccessPage() {
     }
     setIsLoading(false);
   }, []);
-
-  // Hiển thị loading
   if (isLoading) {
     return (
       <MainContent>
