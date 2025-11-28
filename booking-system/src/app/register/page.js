@@ -16,62 +16,72 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+    // --- BẮT ĐẦU VALIDATION ---
+    if (!formData.ho_ten.trim()) {
+      setError("Vui lòng nhập họ và tên.");
       return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Địa chỉ Email không hợp lệ.");
+      return;
+    }
+    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+    if (!phoneRegex.test(formData.so_dien_thoai)) {
+      setError("Số điện thoại không hợp lệ (VD: 09... hoặc 03...).");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+    // --- KẾT THÚC VALIDATION ---
 
     setIsLoading(true);
     setError("");
 
     try {
-      // Chuẩn bị dữ liệu để gửi lên server
       const submitData = {
         ho_ten: formData.ho_ten,
         email: formData.email,
         so_dien_thoai: formData.so_dien_thoai,
         password: formData.password,
-        // role: formData.role,
-        // da_ghi: false,
-        // hint_arth: "",
-        // is_satwe: false,
-        // is_block: false,
       };
 
       console.log("Register data:", submitData);
 
-      // Gọi API đăng ký
       if (formData.role === "provider") {
         const response = await fetch(
           "http://127.0.0.1:8000/api/nha-cung-cap/dang-ky",
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(submitData),
           }
         );
-
         const result = await response.json();
-
         if (response.ok) {
-          alert("Đăng ký tài khoản nhà cung cấp thành công! Vui lòng đăng nhập.");
+          alert(
+            "Đăng ký tài khoản nhà cung cấp thành công! Vui lòng đăng nhập."
+          );
           window.location.href = "/login";
         } else {
           setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
         }
       } else if (formData.role === "user") {
-        const response = await fetch("http://127.0.0.1:8000/api/khach-hang/dang-ky", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(submitData),
-        });
-
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/khach-hang/dang-ky",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(submitData),
+          }
+        );
         const result = await response.json();
-
         if (response.ok) {
           alert("Đăng ký tài khoản khách hàng thành công! Vui lòng đăng nhập.");
           window.location.href = "/login";
@@ -87,10 +97,34 @@ export default function RegisterPage() {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // --- STYLES (Đã chỉnh nhỏ lại) ---
+  const labelStyle = {
+    display: "block",
+    fontSize: "0.85rem", // Giảm font size label
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: "0.4rem", // Giảm margin dưới label
+  };
+
+  const inputWrapperStyle = {
+    border: "1px solid #e5e7eb", // Đổi border mỏng hơn chút
+    borderRadius: "6px",
+    backgroundColor: "#fafafa",
+    transition: "all 0.2s ease",
+    overflow: "hidden",
+  };
+
+  const inputStyle = {
+    width: "100%",
+    padding: "0.6rem 1rem", // Giảm padding input
+    border: "none",
+    fontSize: "0.9rem", // Giảm font chữ input
+    backgroundColor: "transparent",
+    outline: "none",
+    boxSizing: "border-box",
   };
 
   return (
@@ -101,7 +135,7 @@ export default function RegisterPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2rem 1rem",
+        padding: "1rem", // Giảm padding bao quanh
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
@@ -109,25 +143,19 @@ export default function RegisterPage() {
       <div
         style={{
           display: "flex",
-          maxWidth: "450px",
+          maxWidth: "400px", // Giảm chiều rộng tối đa (450 -> 400)
           width: "100%",
           flexDirection: "column",
-          gap: "2rem",
+          gap: "1.5rem", // Giảm khoảng cách giữa header, form, footer
         }}
       >
         {/* Header */}
-        <div
-          style={{
-            textAlign: "center",
-            color: "white",
-            marginBottom: "1rem",
-          }}
-        >
+        <div style={{ textAlign: "center", color: "white" }}>
           <h1
             style={{
-              fontSize: "2.5rem",
+              fontSize: "2rem", // Giảm kích thước chữ tiêu đề (2.5 -> 2)
               fontWeight: "bold",
-              marginBottom: "0.5rem",
+              marginBottom: "0.25rem",
               background: "linear-gradient(45deg, #fff, #f0f8ff)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -135,13 +163,7 @@ export default function RegisterPage() {
           >
             BookingSystem
           </h1>
-          <p
-            style={{
-              fontSize: "1.1rem",
-              opacity: 0.9,
-              fontWeight: "500",
-            }}
-          >
+          <p style={{ fontSize: "1rem", opacity: 0.9, fontWeight: "500" }}>
             Tạo tài khoản mới để bắt đầu
           </p>
         </div>
@@ -150,14 +172,14 @@ export default function RegisterPage() {
         <div
           style={{
             backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "2.5rem",
+            borderRadius: "10px",
+            padding: "2rem", // Giảm padding trong card (2.5 -> 2)
             boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
             border: "1px solid #e1e5e9",
           }}
         >
           <form
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }} // Giảm gap giữa các input (1.5 -> 1)
             onSubmit={handleSubmit}
           >
             {error && (
@@ -166,11 +188,11 @@ export default function RegisterPage() {
                   backgroundColor: "#fef2f2",
                   border: "1px solid #fecaca",
                   color: "#dc2626",
-                  padding: "1rem",
-                  borderRadius: "8px",
-                  fontSize: "0.9rem",
+                  padding: "0.75rem",
+                  borderRadius: "6px",
+                  fontSize: "0.85rem",
                   textAlign: "center",
-                  borderLeft: "4px solid #dc2626",
+                  borderLeft: "3px solid #dc2626",
                 }}
               >
                 ⚠️ {error}
@@ -179,27 +201,10 @@ export default function RegisterPage() {
 
             {/* Họ và tên Field */}
             <div>
-              <label
-                htmlFor="ho_ten"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="ho_ten" style={labelStyle}>
                 Họ và tên
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <input
                   id="ho_ten"
                   name="ho_ten"
@@ -207,26 +212,15 @@ export default function RegisterPage() {
                   required
                   value={formData.ho_ten}
                   onChange={handleChange}
-                  placeholder="Nhập họ và tên của bạn"
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
+                  placeholder="Nhập họ và tên"
+                  style={inputStyle}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -234,27 +228,10 @@ export default function RegisterPage() {
 
             {/* Email Field */}
             <div>
-              <label
-                htmlFor="email"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="email" style={labelStyle}>
                 Email
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <input
                   id="email"
                   name="email"
@@ -262,26 +239,15 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="homersimpson@gmail.com"
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
+                  placeholder="email@example.com"
+                  style={inputStyle}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -289,27 +255,10 @@ export default function RegisterPage() {
 
             {/* Số điện thoại Field */}
             <div>
-              <label
-                htmlFor="so_dien_thoai"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="so_dien_thoai" style={labelStyle}>
                 Số điện thoại
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <input
                   id="so_dien_thoai"
                   name="so_dien_thoai"
@@ -317,26 +266,15 @@ export default function RegisterPage() {
                   required
                   value={formData.so_dien_thoai}
                   onChange={handleChange}
-                  placeholder="Nhập số điện thoại của bạn"
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
+                  placeholder="0912345678"
+                  style={inputStyle}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -344,52 +282,23 @@ export default function RegisterPage() {
 
             {/* Role Field */}
             <div>
-              <label
-                htmlFor="role"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="role" style={labelStyle}>
                 Bạn là
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <select
                   id="role"
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                    cursor: "pointer",
-                  }}
+                  style={{ ...inputStyle, cursor: "pointer" }}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 >
                   <option value="user">Người dùng</option>
@@ -400,27 +309,10 @@ export default function RegisterPage() {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="password"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="password" style={labelStyle}>
                 Mật khẩu
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <input
                   id="password"
                   name="password"
@@ -429,25 +321,14 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
+                  style={inputStyle}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -455,27 +336,10 @@ export default function RegisterPage() {
 
             {/* Confirm Password Field */}
             <div>
-              <label
-                htmlFor="confirmPassword"
-                style={{
-                  display: "block",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  color: "#374151",
-                  marginBottom: "0.75rem",
-                }}
-              >
+              <label htmlFor="confirmPassword" style={labelStyle}>
                 Xác nhận mật khẩu
               </label>
-              <div
-                style={{
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#fafafa",
-                  transition: "all 0.2s ease",
-                  overflow: "hidden",
-                }}
-              >
+              <div style={inputWrapperStyle}>
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -484,25 +348,14 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "none",
-                    fontSize: "1rem",
-                    backgroundColor: "transparent",
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
+                  style={inputStyle}
                   onFocus={(e) => {
                     e.target.parentElement.style.borderColor = "#ff6b6b";
                     e.target.parentElement.style.backgroundColor = "white";
-                    e.target.parentElement.style.boxShadow =
-                      "0 0 0 3px rgba(255, 107, 107, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.target.parentElement.style.borderColor = "#e5e7eb";
                     e.target.parentElement.style.backgroundColor = "#fafafa";
-                    e.target.parentElement.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -513,40 +366,27 @@ export default function RegisterPage() {
               style={{
                 display: "flex",
                 alignItems: "flex-start",
-                gap: "0.75rem",
-                fontSize: "0.85rem",
+                gap: "0.5rem",
+                fontSize: "0.8rem",
                 color: "#4b5563",
-                padding: "0.5rem 0",
-                lineHeight: "1.4",
+                lineHeight: "1.3",
               }}
             >
-              <div
-                style={{
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  marginTop: "0.2rem",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  id="terms"
-                  required
-                  style={{
-                    cursor: "pointer",
-                    width: "16px",
-                    height: "16px",
-                    margin: 0,
-                    accentColor: "#ff6b6b",
-                  }}
-                />
-              </div>
-              <label
-                htmlFor="terms"
+              <input
+                type="checkbox"
+                id="terms"
+                required
                 style={{
                   cursor: "pointer",
-                  fontWeight: "500",
+                  width: "14px",
+                  height: "14px",
+                  marginTop: "2px",
+                  accentColor: "#ff6b6b",
                 }}
+              />
+              <label
+                htmlFor="terms"
+                style={{ cursor: "pointer", fontWeight: "500" }}
               >
                 Tôi đồng ý với{" "}
                 <a
@@ -557,7 +397,7 @@ export default function RegisterPage() {
                     fontWeight: "600",
                   }}
                 >
-                  Điều khoản dịch vụ
+                  Điều khoản
                 </a>{" "}
                 và{" "}
                 <a
@@ -568,7 +408,7 @@ export default function RegisterPage() {
                     fontWeight: "600",
                   }}
                 >
-                  Chính sách bảo mật
+                  Chính sách
                 </a>
               </label>
             </div>
@@ -581,31 +421,28 @@ export default function RegisterPage() {
                 width: "100%",
                 backgroundColor: "#ff6b6b",
                 color: "white",
-                padding: "1rem",
-                borderRadius: "8px",
+                padding: "0.8rem", // Giảm padding nút
+                borderRadius: "6px",
                 fontWeight: "600",
                 border: "none",
                 cursor: "pointer",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 transition: "all 0.2s ease",
                 opacity: isLoading ? 0.7 : 1,
-                marginTop: "0.5rem",
+                marginTop: "0.25rem",
               }}
               onMouseOver={(e) => {
                 if (!isLoading) {
                   e.target.style.backgroundColor = "#ff5252";
                   e.target.style.transform = "translateY(-1px)";
-                  e.target.style.boxShadow =
-                    "0 4px 12px rgba(255, 107, 107, 0.4)";
                 }
               }}
               onMouseOut={(e) => {
                 e.target.style.backgroundColor = "#ff6b6b";
                 e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = "none";
               }}
             >
-              {isLoading ? "⏳ Đang tạo tài khoản..." : "Tạo tài khoản"}
+              {isLoading ? "⏳ Đang xử lý..." : "Tạo tài khoản"}
             </button>
           </form>
 
@@ -613,14 +450,14 @@ export default function RegisterPage() {
           <div
             style={{
               textAlign: "center",
-              marginTop: "2rem",
-              paddingTop: "2rem",
+              marginTop: "1.5rem",
+              paddingTop: "1.5rem",
               borderTop: "1px solid #f0f0f0",
             }}
           >
             <span
               style={{
-                fontSize: "0.95rem",
+                fontSize: "0.9rem",
                 color: "#6b7280",
                 fontWeight: "500",
               }}
@@ -632,14 +469,9 @@ export default function RegisterPage() {
                   fontWeight: "600",
                   color: "#ff6b6b",
                   textDecoration: "none",
-                  transition: "color 0.2s ease",
                 }}
-                onMouseOver={(e) => {
-                  e.target.style.color = "#ff5252";
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = "#ff6b6b";
-                }}
+                onMouseOver={(e) => (e.target.style.color = "#ff5252")}
+                onMouseOut={(e) => (e.target.style.color = "#ff6b6b")}
               >
                 Đăng nhập
               </a>
@@ -653,11 +485,11 @@ export default function RegisterPage() {
             textAlign: "center",
             color: "white",
             opacity: 0.8,
-            fontSize: "0.9rem",
+            fontSize: "0.85rem",
             fontWeight: "500",
           }}
         >
-          <p>© 2024 BookingSystem. Tất cả các quyền được bảo lưu.</p>
+          <p>© 2025 BookingSystem. Tất cả các quyền được bảo lưu.</p>
         </div>
       </div>
     </div>

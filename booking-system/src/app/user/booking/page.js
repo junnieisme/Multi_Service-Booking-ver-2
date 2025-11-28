@@ -108,12 +108,15 @@ export default function BookingPage() {
   const validateForm = () => {
     let newErrors = {};
     let isValid = true;
+    const now = new Date(); 
 
+    // 1. Validate Tên
     if (!bookingData.fullName.trim()) {
       newErrors.fullName = "Vui lòng nhập họ và tên.";
       isValid = false;
     }
 
+    // 2. Validate Số điện thoại
     const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
     if (!bookingData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại.";
@@ -123,14 +126,41 @@ export default function BookingPage() {
       isValid = false;
     }
 
-    const selectedDate = new Date(bookingData.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      newErrors.date = "Ngày hẹn không hợp lệ.";
+    // 3. Validate NGÀY (Date)
+    if (!bookingData.date) {
+      newErrors.date = "Vui lòng chọn ngày.";
       isValid = false;
+    } else {
+      const selectedDate = new Date(bookingData.date);
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate < todayDate) {
+        newErrors.date = "Ngày hẹn không thể chọn trong quá khứ.";
+        isValid = false;
+      }
     }
 
+    // 4. Validate GIỜ (Time)
+    if (!bookingData.time) {
+      newErrors.time = "Vui lòng chọn giờ.";
+      isValid = false;
+    } else {
+      const [hours, minutes] = bookingData.time.split(":").map(Number);
+      if (hours < 8 || hours > 22) {
+        newErrors.time = "Vui lòng đặt lịch trong khung giờ (08:00 - 22:00).";
+        isValid = false;
+      }
+      else if (bookingData.date) {
+        const selectedDateTime = new Date(
+          `${bookingData.date}T${bookingData.time}`
+        );
+        if (selectedDateTime < now) {
+          newErrors.time = "Giờ này đã qua, vui lòng chọn giờ khác.";
+          isValid = false;
+        }
+      }
+    }
     if (!bookingData.agreeTerms) {
       alert("Bạn cần đồng ý với điều khoản dịch vụ.");
       isValid = false;
@@ -178,7 +208,7 @@ export default function BookingPage() {
           maxWidth: "1000px",
           margin: "0 auto",
           padding: "2rem",
-          ...vietnameseFont, // Áp dụng font chữ tiếng Việt
+          ...vietnameseFont, 
         }}
       >
         {/* Header */}

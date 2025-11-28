@@ -9,6 +9,7 @@ export default function Header() {
 
   // Xác định role dựa trên current path
   const isProvider = pathname.startsWith("/provider");
+  // Logic xác định user (dùng để hiện menu tương ứng)
   const isUser =
     pathname.startsWith("/user") || (!isProvider && pathname !== "/");
 
@@ -167,52 +168,72 @@ export default function Header() {
               </div>
             )}
 
-            {/* Ở homepage thì hiển thị nút chọn role */}
+            {/* Ở HOMEPAGE: HIỂN THỊ ĐĂNG NHẬP / ĐĂNG KÝ (ĐÃ STYLE ĐẸP HƠN) */}
             {pathname === "/" && (
-              <div style={{ display: "flex", gap: "0.5rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  alignItems: "center",
+                }}
+              >
+                {/* Nút Đăng nhập - Style: Outline, đơn giản, tinh tế */}
                 <button
-                  onClick={() => router.push("/user")}
+                  onClick={() => router.push("/login")}
                   style={{
                     color: "#374151",
-                    background: "none",
-                    border: "1px solid #d1d5db",
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
                     cursor: "pointer",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "0.375rem",
-                    fontWeight: "500",
+                    padding: "0.6rem 1.5rem",
+                    borderRadius: "99px", // Bo tròn pill shape
+                    fontWeight: "600",
+                    fontSize: "0.9rem",
                     transition: "all 0.2s ease",
                   }}
                   onMouseOver={(e) => {
-                    e.target.style.backgroundColor = "#f9fafb";
-                    e.target.style.borderColor = "#9ca3af";
+                    e.target.style.borderColor = "#2563eb";
+                    e.target.style.color = "#2563eb";
+                    e.target.style.backgroundColor = "#eff6ff";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.backgroundColor = "white";
+                    e.target.style.borderColor = "#e5e7eb";
+                    e.target.style.color = "#374151";
                   }}
                 >
-                  Khách hàng
+                  Đăng nhập
                 </button>
+
+                {/* Nút Đăng ký - Style: Solid, nổi bật, có shadow */}
                 <button
-                  onClick={() => router.push("/provider")}
+                  onClick={() => router.push("/register")}
                   style={{
                     backgroundColor: "#2563eb",
                     color: "white",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "0.375rem",
+                    padding: "0.6rem 1.5rem",
+                    borderRadius: "99px", // Bo tròn pill shape
                     border: "none",
                     cursor: "pointer",
-                    fontWeight: "500",
-                    transition: "background-color 0.2s ease",
+                    fontWeight: "600",
+                    fontSize: "0.9rem",
+                    transition: "all 0.2s ease",
+                    boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)", // Shadow xanh nhẹ
                   }}
                   onMouseOver={(e) => {
                     e.target.style.backgroundColor = "#1d4ed8";
+                    e.target.style.transform = "translateY(-2px)"; // Nâng nhẹ lên
+                    e.target.style.boxShadow =
+                      "0 6px 10px -1px rgba(37, 99, 235, 0.3)";
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.backgroundColor = "#2563eb";
+                    e.target.style.transform = "translateY(0)";
+                    e.target.style.boxShadow =
+                      "0 4px 6px -1px rgba(37, 99, 235, 0.2)";
                   }}
                 >
-                  Nhà cung cấp
+                  Đăng ký
                 </button>
               </div>
             )}

@@ -6,28 +6,47 @@ import React, { useState, useEffect } from "react";
 export default function UserProfilePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState([]);
+
+
+  const [formData, setFormData] = useState({
+    ho_ten: "",
+    so_dien_thoai: "",
+    email: "",
+    ngay_sinh: "",
+    gioi_tinh: 0,
+    dia_chi: "",
+  });
+
+
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          return;
+        }
+
         const response = await fetch(
           "http://127.0.0.1:8000/api/khach-hang/profile",
-           {
+          {
             method: "GET",
             headers: {
-               Authorization: 'Bearer '+ localStorage.getItem("authToken"),
+              Authorization: "Bearer " + token,
             },
           }
         );
+
         if (!response.ok) {
-          console.warn("API chưa sẵn sàng, dùng dữ liệu mẫu.");
+          console.warn("API chưa sẵn sàng hoặc token hết hạn.");
           setIsLoading(false);
           return;
         }
+
         const result = await response.json();
         if (result.status === true) {
-          console.log("Dữ liệu dịch vụ đã được tải từ API ", result.data);
           setFormData(result.data);
         }
       } catch (err) {
@@ -37,7 +56,7 @@ export default function UserProfilePage() {
       }
     };
     loadData();
-  },[]) ;
+  }, []);
 
   const [preferences, setPreferences] = useState({
     notifications: true,
@@ -47,16 +66,95 @@ export default function UserProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  // --- HÀM VALIDATE ---
+  const validateForm = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    // 1. Validate Họ tên
+    if (!formData.ho_ten || !formData.ho_ten.trim()) {
+      newErrors.ho_ten = "Họ và tên không được để trống";
+      isValid = false;
+    }
+
+    // 2. Validate Ngày sinh
+    if (!formData.ngay_sinh) {
+      newErrors.ngay_sinh = "Vui lòng chọn ngày sinh";
+      isValid = false;
+    } else {
+      const selectedDate = new Date(formData.ngay_sinh);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        newErrors.ngay_sinh = "Ngày sinh không được lớn hơn ngày hiện tại";
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+
   const handleSave = async () => {
-    // API Call: PUT /api/user/profile
-    console.log("Saving profile:", { formData, socialMedia, preferences });
-    setIsEditing(false);
-    // TODO: Add API call and error handling
+    if (!validateForm()) {
+      return; 
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const payload = {
+        ho_ten: formData.ho_ten,
+        ngay_sinh: formData.ngay_sinh,
+        gioi_tinh: formData.gioi_tinh,
+        dia_chi: formData.dia_chi,
+        so_dien_thoai: formData.so_dien_thoai,
+        email: formData.email,
+      };
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/khach-hang/profile",
+        {
+          method: "PUT", 
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.status === true) {
+        alert("Cập nhật hồ sơ thành công!");
+        setIsEditing(false);
+        setErrors({}); 
+        if (result.data) {
+          setFormData(result.data);
+        }
+      } else {
+
+        alert(result.message || "Cập nhật thất bại. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu hồ sơ:", error);
+      alert("Đã xảy ra lỗi kết nối.");
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // TODO: Reset form data
+    setErrors({}); 
+  };
+
+  const errorTextStyle = {
+    color: "red",
+    fontSize: "0.75rem",
+    marginTop: "0.25rem",
+    display: "block",
   };
 
   return (
@@ -148,21 +246,28 @@ export default function UserProfilePage() {
                 Họ và tên *
               </label>
               {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.ho_ten}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ho_ten: e.target.value })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "6px",
-                    fontSize: "0.875rem",
-                  }}
-                  placeholder="Nhập họ và tên"
-                />
+                <>
+                  <input
+                    type="text"
+                    value={formData.ho_ten}
+                    onChange={(e) =>
+                      setFormData({ ...formData, ho_ten: e.target.value })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: errors.ho_ten
+                        ? "1px solid red"
+                        : "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
+                    placeholder="Nhập họ và tên"
+                  />
+                  {errors.ho_ten && (
+                    <span style={errorTextStyle}>{errors.ho_ten}</span>
+                  )}
+                </>
               ) : (
                 <div
                   style={{
@@ -203,7 +308,10 @@ export default function UserProfilePage() {
                     type="tel"
                     value={formData.so_dien_thoai}
                     onChange={(e) =>
-                      setFormData({ ...formData, so_dien_thoai: e.target.value })
+                      setFormData({
+                        ...formData,
+                        so_dien_thoai: e.target.value,
+                      })
                     }
                     style={{
                       width: "100%",
@@ -294,22 +402,28 @@ export default function UserProfilePage() {
                   Ngày sinh
                 </label>
                 {isEditing ? (
-                  <input
-                    type="date" 
-                    value={formData.ngay_sinh}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ngay_sinh: e.target.value })
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #d1d5db",
-                      borderRadius: "6px",
-                      fontSize: "0.875rem",
-                      fontFamily: "inherit", 
-                    }}
-
-                  />
+                  <>
+                    <input
+                      type="date"
+                      value={formData.ngay_sinh}
+                      onChange={(e) =>
+                        setFormData({ ...formData, ngay_sinh: e.target.value })
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: errors.ngay_sinh
+                          ? "1px solid red"
+                          : "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        fontSize: "0.875rem",
+                        fontFamily: "inherit",
+                      }}
+                    />
+                    {errors.ngay_sinh && (
+                      <span style={errorTextStyle}>{errors.ngay_sinh}</span>
+                    )}
+                  </>
                 ) : (
                   <div
                     style={{
@@ -320,11 +434,8 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {/* 3. Khi hiển thị text thì format(VD: DD/MM/YYYY) */}
                     {formData.ngay_sinh
-                      ? new Date(formData.ngay_sinh).toLocaleDateString(
-                          "vi-VN"
-                        )
+                      ? new Date(formData.ngay_sinh).toLocaleDateString("vi-VN")
                       : "Chưa cập nhật"}
                   </div>
                 )}
@@ -370,7 +481,13 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.gioi_tinh === "0"? "Nam": formData.gioi_tinh === "1"? "Nữ":formData.gioi_tinh === 2 ? "Khác":"Chưa cập nhật"}
+                    {formData.gioi_tinh == "0"
+                      ? "Nam"
+                      : formData.gioi_tinh == "1"
+                      ? "Nữ"
+                      : formData.gioi_tinh == 2
+                      ? "Khác"
+                      : "Chưa cập nhật"}
                   </div>
                 )}
               </div>
