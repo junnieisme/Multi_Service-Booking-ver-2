@@ -274,19 +274,6 @@ export default function HomePage() {
                   fontSize: "0.95rem",
                   transition: "all 0.2s ease",
                 }}
-                onMouseOver={(e) => (e.target.style.filter = "grayscale(0%)")}
-                onMouseOut={(e) => (e.target.style.filter = "grayscale(100%)")}
-              />
-
-              {/* Logo 3 - Ví dụ Momo */}
-               <img
-                src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                alt="Partner 3"
-                style={{
-                  height: "35px",
-                  objectFit: "contain",
-                  filter: "grayscale(100%)",
-                  transition: "all 0.3s",
                 onMouseOver={(e) => {
                   if (selectedCategory !== category.id) {
                     e.target.style.backgroundColor = "#f1f5f9";
