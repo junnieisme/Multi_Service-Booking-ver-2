@@ -1,17 +1,44 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import SearchBar from "../UI/SearchBar";
 import NotificationBell from "../UI/NotificationBell";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState("user"); // "user" hoặc "provider"
 
-  // Xác định role dựa trên current path
-  const isProvider = pathname.startsWith("/provider");
+  // Kiểm tra trạng thái đăng nhập khi component mount và khi pathname thay đổi
+  useEffect(() => {
+    // Giả sử bạn lưu token và role trong localStorage/sessionStorage
+    // Thay đổi logic này theo cách bạn lưu trữ authentication thực tế
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const role =
+      localStorage.getItem("userRole") ||
+      sessionStorage.getItem("userRole") ||
+      "user";
+
+    if (token) {
+      setIsLoggedIn(true);
+      setUserRole(role);
+    } else {
+      setIsLoggedIn(false);
+      setUserRole("user");
+    }
+  }, [pathname]);
+
+  // Xác định role dựa trên current path HOẶC từ state nếu đã đăng nhập
+  const isProvider = isLoggedIn
+    ? userRole === "provider"
+    : pathname.startsWith("/provider");
+
   // Logic xác định user (dùng để hiện menu tương ứng)
-  const isUser =
-    pathname.startsWith("/user") || (!isProvider && pathname !== "/");
+  const isUser = isLoggedIn
+    ? userRole === "user"
+    : pathname.startsWith("/user") || (!isProvider && pathname !== "/");
 
   const providerMenu = [
     { name: "Homepage", path: "/" },
@@ -29,6 +56,22 @@ export default function Header() {
   ];
 
   const currentMenu = isProvider ? providerMenu : userMenu;
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Xóa thông tin đăng nhập
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("userRole");
+
+    // Reset state
+    setIsLoggedIn(false);
+    setUserRole("user");
+
+    // Chuyển hướng về trang chủ
+    router.push("/");
+  };
 
   return (
     <header
@@ -74,7 +117,7 @@ export default function Header() {
             </h1>
 
             {/* Navigation Menu - ẩn khi ở homepage */}
-            {pathname !== "/" && (
+            {pathname !== "/" && isLoggedIn && (
               <nav style={{ display: "flex", gap: "1.5rem" }}>
                 {currentMenu.map((item) => (
                   <button
@@ -114,11 +157,13 @@ export default function Header() {
 
           {/* Right side */}
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            {/* Chuông thông báo - ẩn ở homepage */}
-            {pathname !== "/" && <NotificationBell notifications={[]} />}
+            {/* Chuông thông báo - ẩn ở homepage, chỉ hiện khi đã đăng nhập */}
+            {pathname !== "/" && isLoggedIn && (
+              <NotificationBell notifications={[]} />
+            )}
 
-            {/* Role Indicator + Switch - ẩn ở homepage */}
-            {pathname !== "/" && (
+            {/* Role Indicator + Switch - ẩn ở homepage, chỉ hiện khi đã đăng nhập */}
+            {pathname !== "/" && isLoggedIn && (
               <div
                 style={{ display: "flex", alignItems: "center", gap: "1rem" }}
               >
@@ -168,7 +213,7 @@ export default function Header() {
               </div>
             )}
 
-            {/* Ở HOMEPAGE: HIỂN THỊ ĐĂNG NHẬP / ĐĂNG KÝ (ĐÃ STYLE ĐẸP HƠN) */}
+            {/* Ở HOMEPAGE: HIỂN THỊ ĐĂNG NHẬP / ĐĂNG KÝ HOẶC ĐĂNG XUẤT */}
             {pathname === "/" && (
               <div
                 style={{
@@ -177,65 +222,126 @@ export default function Header() {
                   alignItems: "center",
                 }}
               >
-                {/* Nút Đăng nhập - Style: Outline, đơn giản, tinh tế */}
-                <button
-                  onClick={() => router.push("/login")}
-                  style={{
-                    color: "#374151",
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    cursor: "pointer",
-                    padding: "0.6rem 1.5rem",
-                    borderRadius: "99px", // Bo tròn pill shape
-                    fontWeight: "600",
-                    fontSize: "0.9rem",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.borderColor = "#2563eb";
-                    e.target.style.color = "#2563eb";
-                    e.target.style.backgroundColor = "#eff6ff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.borderColor = "#e5e7eb";
-                    e.target.style.color = "#374151";
-                  }}
-                >
-                  Đăng nhập
-                </button>
+                {!isLoggedIn ? (
+                  <>
+                    {/* Nút Đăng nhập - Khi chưa đăng nhập */}
+                    <button
+                      onClick={() => router.push("/login")}
+                      style={{
+                        color: "#374151",
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        cursor: "pointer",
+                        padding: "0.6rem 1.5rem",
+                        borderRadius: "99px",
+                        fontWeight: "600",
+                        fontSize: "0.9rem",
+                        transition: "all 0.2s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.borderColor = "#2563eb";
+                        e.target.style.color = "#2563eb";
+                        e.target.style.backgroundColor = "#eff6ff";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = "white";
+                        e.target.style.borderColor = "#e5e7eb";
+                        e.target.style.color = "#374151";
+                      }}
+                    >
+                      Đăng nhập
+                    </button>
 
-                {/* Nút Đăng ký - Style: Solid, nổi bật, có shadow */}
-                <button
-                  onClick={() => router.push("/register")}
-                  style={{
-                    backgroundColor: "#2563eb",
-                    color: "white",
-                    padding: "0.6rem 1.5rem",
-                    borderRadius: "99px", // Bo tròn pill shape
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                    fontSize: "0.9rem",
-                    transition: "all 0.2s ease",
-                    boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)", // Shadow xanh nhẹ
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = "#1d4ed8";
-                    e.target.style.transform = "translateY(-2px)"; // Nâng nhẹ lên
-                    e.target.style.boxShadow =
-                      "0 6px 10px -1px rgba(37, 99, 235, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "#2563eb";
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow =
-                      "0 4px 6px -1px rgba(37, 99, 235, 0.2)";
-                  }}
-                >
-                  Đăng ký
-                </button>
+                    {/* Nút Đăng ký - Khi chưa đăng nhập */}
+                    <button
+                      onClick={() => router.push("/register")}
+                      style={{
+                        backgroundColor: "#2563eb",
+                        color: "white",
+                        padding: "0.6rem 1.5rem",
+                        borderRadius: "99px",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                        fontSize: "0.9rem",
+                        transition: "all 0.2s ease",
+                        boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = "#1d4ed8";
+                        e.target.style.transform = "translateY(-2px)";
+                        e.target.style.boxShadow =
+                          "0 6px 10px -1px rgba(37, 99, 235, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = "#2563eb";
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow =
+                          "0 4px 6px -1px rgba(37, 99, 235, 0.2)";
+                      }}
+                    >
+                      Đăng ký
+                    </button>
+                  </>
+                ) : (
+                  /* Nút Đăng xuất - Khi đã đăng nhập */
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      padding: "0.6rem 1.5rem",
+                      borderRadius: "99px",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      transition: "all 0.2s ease",
+                      boxShadow: "0 4px 6px -1px rgba(239, 68, 68, 0.2)",
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.backgroundColor = "#dc2626";
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow =
+                        "0 6px 10px -1px rgba(239, 68, 68, 0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "#ef4444";
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow =
+                        "0 4px 6px -1px rgba(239, 68, 68, 0.2)";
+                    }}
+                  >
+                    Đăng xuất
+                  </button>
+                )}
               </div>
+            )}
+
+            {/* Nút Đăng xuất - Khi KHÔNG ở homepage và đã đăng nhập */}
+            {pathname !== "/" && isLoggedIn && (
+              <button
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.375rem",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  fontSize: "0.875rem",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#dc2626";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#ef4444";
+                }}
+              >
+                Đăng xuất
+              </button>
             )}
           </div>
         </div>
