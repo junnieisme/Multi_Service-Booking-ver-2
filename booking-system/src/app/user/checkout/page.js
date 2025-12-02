@@ -167,6 +167,7 @@ export default function PaymentPage() {
     );
   }
     const tong_tien = paymentInfo.tong_tien_thanh_toan - paymentInfo.tong_tien_da_tra;
+    const phan_tram_thanh_toan = (paymentInfo.tong_tien_thanh_toan ===  paymentInfo.tong_tien_da_tra) ? "100%" :"30%" ;
   return (
     <MainContent>
       
@@ -371,7 +372,7 @@ export default function PaymentPage() {
                     padding: "24px",
                   }}
                 >
-                  <div
+                  <div 
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -386,7 +387,7 @@ export default function PaymentPage() {
                         fontSize: "20px",
                       }}
                     >
-                      Số tiền thanh toán:
+                      Số tiền thanh toán: <p>{phan_tram_thanh_toan}</p>
                     </span>
                     <span
                       style={{
@@ -395,7 +396,7 @@ export default function PaymentPage() {
                         fontSize: "24px",
                       }}
                     >
-                      {tong_tien?.toLocaleString() || "0"} VND
+                      {paymentInfo.tong_tien_da_tra?.toLocaleString() || "0"} VND
                     </span>
                   </div>
 
