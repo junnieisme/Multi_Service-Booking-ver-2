@@ -9,22 +9,55 @@ export default function PaymentPage() {
   const [paymentInfo, setPaymentInfo] = useState();
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
-    // const info = localStorage.getItem("paymentInfo");
-    const info = localStorage.getItem("paymentInfo");
-    if (info) {
+     const fetchdata = async () => {
       try {
-        setPaymentInfo(JSON.parse(info));
-      } catch (error) {
-        console.error("Error parsing paymentInfo:", error);
-        alert("Thông tin thanh toán không hợp lệ, đang quay về trang chủ.");
-        router.push("/");
+        setIsLoading(true);
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/lich-moi-dat",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+          }
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          return false;
+        }
+        const result = await response.json();
+        if (result.status) {
+          console.log("Dữ liệu thanh toán:", result.data);
+          setPaymentInfo(result.data);
+        }
+      } catch (err) {
+        console.error("Lỗi:", err);
+        return false;
+      }finally {
+        setIsLoading(false);
       }
-    } else {
-      alert("Không tìm thấy thông tin thanh toán, đang quay về trang chủ.");
-      router.push("/");
-    }
+    };
+    // const info = localStorage.getItem("paymentInfo");
+    // const info = localStorage.getItem("paymentInfo");
+    // if (info) {
+    //   try {
+    //     setPaymentInfo(JSON.parse(info));
+    //   } catch (error) {
+    //     console.error("Error parsing paymentInfo:", error);
+    //     alert("Thông tin thanh toán không hợp lệ, đang quay về trang chủ.");
+    //     router.push("/");
+    //   }
+    // } else {
+    //   alert("Không tìm thấy thông tin thanh toán, đang quay về trang chủ.");
+    //   router.push("/");
+    // }
+    fetchdata();
   }, [router]);
 
   const handlePayment = (method = "test") => {
@@ -133,9 +166,10 @@ export default function PaymentPage() {
       </MainContent>
     );
   }
-
+    const tong_tien = paymentInfo.tong_tien_thanh_toan - paymentInfo.tong_tien_da_tra;
   return (
     <MainContent>
+      
       <div
         style={{
           minHeight: "80vh",
@@ -270,7 +304,7 @@ export default function PaymentPage() {
                         fontSize: "18px",
                       }}
                     >
-                      {paymentInfo.service?.name || "N/A"}
+                      {paymentInfo.ten_san_pham || "N/A"}
                     </p>
                     <p
                       style={{
@@ -291,7 +325,7 @@ export default function PaymentPage() {
                       }}
                     >
                       <span style={{ marginRight: "4px" }}>📅</span>
-                      {paymentInfo.date} lúc {paymentInfo.time}
+                      {paymentInfo.ngay_dat_lich} lúc {paymentInfo.thoi_gian}
                     </div>
                   </div>
                   <span
@@ -301,7 +335,7 @@ export default function PaymentPage() {
                       fontSize: "18px",
                     }}
                   >
-                    {paymentInfo.totalAmount?.toLocaleString() || "0"} VND
+                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"} VND
                   </span>
                 </div>
               </div>
@@ -325,7 +359,7 @@ export default function PaymentPage() {
                     Tổng tiền:
                   </span>
                   <span style={{ fontWeight: "bold", color: "#1f2937" }}>
-                    {paymentInfo.totalAmount?.toLocaleString() || "0"} VND
+                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"} VND
                   </span>
                 </div>
 
@@ -361,7 +395,7 @@ export default function PaymentPage() {
                         fontSize: "24px",
                       }}
                     >
-                      {paymentInfo.amount?.toLocaleString() || "0"} VND
+                      {tong_tien?.toLocaleString() || "0"} VND
                     </span>
                   </div>
 
