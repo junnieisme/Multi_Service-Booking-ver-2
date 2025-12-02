@@ -9,33 +9,63 @@ export default function BookingSuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Checking localStorage for bookingInfo...");
-
-    const info = localStorage.getItem("bookingInfo");
-    console.log("Found bookingInfo:", info);
-
-    if (info) {
+    const fetchdata = async () => {
       try {
-        const parsedInfo = JSON.parse(info);
-        setBookingInfo(parsedInfo);
-        setTimeout(() => {
-          localStorage.removeItem("bookingInfo");
-          localStorage.removeItem("paymentInfo");
-        }, 1000);
-      } catch (error) {
-        console.error("Error parsing bookingInfo:", error);
-        setBookingInfo({
-          ho_ten: "Nguyễn Văn A",
-          so_dien_thoai: "0123456789",
-          ngay_dat_lich: "06/02/2025",
-          thoi_gian: "14:00",
-          service: { name: "Cắt tóc nam", price: 150000 },
-          totalAmount: 165000,
-          bookingId: "BK123456",
-        });
+        setIsLoading(true);
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/lich-moi-dat",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+          }
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          return false;
+        }
+        const result = await response.json();
+        if (result.status) {
+          setBookingInfo(result.data);
+        }
+      } catch (err) {
+        console.error("Lỗi:", err);
+        return false;
+      }finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+   
+    // console.log("Checking localStorage for bookingInfo...");
+
+    // const info = localStorage.getItem("bookingInfo");
+    // console.log("Found bookingInfo:", info);
+
+    // if (info) {
+    //   try {
+    //     const parsedInfo = JSON.parse(info);
+    //     setBookingInfo(parsedInfo);
+    //     setTimeout(() => {
+    //       localStorage.removeItem("bookingInfo");
+    //       localStorage.removeItem("paymentInfo");
+    //     }, 1000);
+    //   } catch (error) {
+    //     console.error("Error parsing bookingInfo:", error);
+    //     setBookingInfo({
+    //       ho_ten: "Nguyễn Văn A",
+    //       so_dien_thoai: "0123456789",
+    //       ngay_dat_lich: "06/02/2025",
+    //       thoi_gian: "14:00",
+    //       service: { name: "Cắt tóc nam", price: 150000 },
+    //       totalAmount: 165000,
+    //       bookingId: "BK123456",
+    //     });
+    //   }
+    // }
+    fetchdata();
   }, []);
   if (isLoading) {
     return (
@@ -175,6 +205,7 @@ export default function BookingSuccessPage() {
     );
   }
 
+  const tong_tien = bookingInfo.tong_tien_thanh_toan - bookingInfo.tong_tien_da_tra;
   // Hiển thị khi có bookingInfo - DÙNG INLINE STYLES
   return (
     <MainContent>
@@ -251,7 +282,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Mã đặt lịch:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.bookingId || `BK${ngay_dat_lich.now()}`}
+                    {bookingInfo.ma_hoa_don}
                   </span>
                 </div>
 
@@ -260,7 +291,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Dịch vụ:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.service?.name || "N/A"}
+                    {bookingInfo.ten_san_pham}
                   </span>
                 </div>
 
@@ -278,7 +309,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Khách hàng:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.ho_ten || "N/A"}
+                    {bookingInfo.ten_khach_hang || "N/A"}
                   </span>
                 </div>
 
@@ -309,7 +340,8 @@ export default function BookingSuccessPage() {
                       Tổng cộng:
                     </span>
                     <span style={{ fontWeight: "bold", color: "#059669" }}>
-                      {bookingInfo.totalAmount?.toLocaleString() || "0"} VND
+                      
+                      {tong_tien?.toLocaleString() || "0"} VND
                     </span>
                   </div>
                 </div>
@@ -367,7 +399,7 @@ export default function BookingSuccessPage() {
                 color: "#6b7280",
               }}
             >
-              <p>Một email xác nhận đã được gửi đến địa chỉ email của bạn.</p>
+              <p>Bạn sẽ được thông báo qua email sau khi chúng tôi xác nhận đặt lịch</p>
               <p>Vui lòng đến đúng giờ hẹn.</p>
             </div>
           </div>

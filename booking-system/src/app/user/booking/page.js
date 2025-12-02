@@ -143,15 +143,15 @@ export default function BookingPage() {
   const validateForm = () => {
     let newErrors = {};
     let isValid = true;
-    const now = new Date(); 
+    const now = new Date();
 
-    if (!bookingData.ho_ten.trim()) {
+    if (!bookingData.ho_ten || !bookingData.ho_ten.trim()) {
       newErrors.ho_ten = "Vui lòng nhập họ và tên.";
       isValid = false;
     }
 
     const so_dien_thoaiRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
-    if (!bookingData.so_dien_thoai.trim()) {
+    if (!bookingData.so_dien_thoai || !bookingData.so_dien_thoai.trim()) {
       newErrors.so_dien_thoai = "Vui lòng nhập số điện thoại.";
       isValid = false;
     } else if (!so_dien_thoaiRegex.test(bookingData.so_dien_thoai)) {
@@ -159,37 +159,37 @@ export default function BookingPage() {
       isValid = false;
     }
 
-    // 3. Validate NGÀY (Date)
-    if (!bookingData.date) {
-      newErrors.date = "Vui lòng chọn ngày.";
+    // 3. Validate NGÀY (Date) - dùng đúng key `ngay_dat_lich`
+    if (!bookingData.ngay_dat_lich) {
+      newErrors.ngay_dat_lich = "Vui lòng chọn ngày.";
       isValid = false;
     } else {
-      const selectedDate = new Date(bookingData.date);
+      const selectedDate = new Date(bookingData.ngay_dat_lich);
       const todayDate = new Date();
       todayDate.setHours(0, 0, 0, 0);
 
       if (selectedDate < todayDate) {
-        newErrors.date = "Ngày hẹn không thể chọn trong quá khứ.";
+        newErrors.ngay_dat_lich = "Ngày hẹn không thể chọn trong quá khứ.";
         isValid = false;
       }
     }
 
-    // 4. Validate GIỜ (Time)
-    if (!bookingData.time) {
-      newErrors.time = "Vui lòng chọn giờ.";
+    // 4. Validate GIỜ (Time) - dùng đúng key `thoi_gian`
+    if (!bookingData.thoi_gian) {
+      newErrors.thoi_gian = "Vui lòng chọn giờ.";
       isValid = false;
     } else {
-      const [hours, minutes] = bookingData.time.split(":").map(Number);
+      const [hours, minutes] = bookingData.thoi_gian.split(":").map(Number);
       if (hours < 8 || hours > 22) {
-        newErrors.time = "Vui lòng đặt lịch trong khung giờ (08:00 - 22:00).";
+        newErrors.thoi_gian =
+          "Vui lòng đặt lịch trong khung giờ (08:00 - 22:00).";
         isValid = false;
-      }
-      else if (bookingData.date) {
+      } else if (bookingData.ngay_dat_lich) {
         const selectedDateTime = new Date(
-          `${bookingData.date}T${bookingData.time}`
+          `${bookingData.ngay_dat_lich}T${bookingData.thoi_gian}`
         );
         if (selectedDateTime < now) {
-          newErrors.time = "Giờ này đã qua, vui lòng chọn giờ khác.";
+          newErrors.thoi_gian = "Giờ này đã qua, vui lòng chọn giờ khác.";
           isValid = false;
         }
       }
@@ -204,35 +204,47 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async () => {
-    console.log("Dữ liệu đặt lịch gửi đi:", bookingData); 
-
-    const response = await fetch(
-      "http://127.0.0.1:8000/api/dat-lich/them-moi",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", 
-        },
-        body: JSON.stringify(bookingData),
-      }
-    );
-    const result = await response.json();
-    if (response.ok) {
-      if (result.status === true) {
-         alert(result.message || "Đặt lịch thành công!");
-    } else {
-      setError(result.message || "Đặt lịch thất bại. Vui lòng thử lại.");
+    if (!validateForm()) {
+      console.log("Form validation failed. Errors:", errors);
+      return;
     }
-  }else{
-      setError(result.message);
-  }
-    // if (validateForm()) {
-    //   if (bookingData.paymentMethod === "counter") {
-    //     router.push("/user/booking/success"); // chưa thanh toán
-    //   } else {
-    //     router.push("/user/checkout"); // đã đặt cọc hoặc thanh toán toàn bộ
-    //   }
-    // }
+
+    console.log(
+      "Form validation passed. Submitting booking data:",
+      bookingData
+    );
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/dat-lich/them-moi",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingData),
+        }
+      );
+      const result = await response.json();
+      if (response.ok) {
+        if (result.status === true) {
+          alert(result.message);
+          // Redirect theo payment method
+          if (bookingData.paymentMethod === "counter") {
+            router.push("/user/booking/success");
+          } else {
+            router.push("/user/checkout");
+          }
+        } else {
+          alert(result.message);
+        }
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      console.error("Lỗi gửi dữ liệu:", err);
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
   };
 
   const handleCancel = () => {
@@ -263,7 +275,7 @@ export default function BookingPage() {
           maxWidth: "1000px",
           margin: "0 auto",
           padding: "2rem",
-          ...vietnameseFont, 
+          ...vietnameseFont,
         }}
       >
         {/* Header */}
