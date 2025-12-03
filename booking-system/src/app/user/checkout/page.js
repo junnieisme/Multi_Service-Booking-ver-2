@@ -231,10 +231,10 @@ export default function PaymentPage() {
       setIsProcessing(false);
 
       // Chuyển hướng đến trang thành công
-      if (method === "test") {
-        // Demo: alert thành công trước khi redirect
-        alert("Thanh toán demo thành công! Đang chuyển hướng...");
-      }
+      // if (method === "test") {
+      //   // Demo: alert thành công trước khi redirect
+      //   alert("Thanh toán demo thành công! Đang chuyển hướng...");
+      // }
 
       router.push("/user/booking/success");
     }, 2000);
@@ -998,7 +998,7 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {/* Processing Overlay */}
+          Processing Overlay
           {isProcessing && (
             <div
               style={{
@@ -1075,7 +1075,7 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes spin {
           0% {
             transform: rotate(0deg);

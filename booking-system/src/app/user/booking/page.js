@@ -511,7 +511,7 @@ export default function BookingPage() {
             }}
           >
             {/* Responsive grid cho desktop */}
-            <style jsx>{`
+            <style >{`
               @media (min-width: 1024px) {
                 .booking-container {
                   grid-template-columns: 1fr 1fr !important;

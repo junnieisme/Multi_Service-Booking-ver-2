@@ -115,9 +115,9 @@ export default function UserProfilePage() {
       };
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/khach-hang/profile",
+        "http://127.0.0.1:8000/api/khach-hang/cap-nhat",
         {
-          method: "PUT", 
+          method: "POST", 
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token,
@@ -129,7 +129,7 @@ export default function UserProfilePage() {
       const result = await response.json();
 
       if (response.ok && result.status === true) {
-        alert("Cập nhật hồ sơ thành công!");
+        alert(result.message);
         setIsEditing(false);
         setErrors({}); 
         if (result.data) {
@@ -481,9 +481,9 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.gioi_tinh == "0"
+                    {formData.gioi_tinh == 0
                       ? "Nam"
-                      : formData.gioi_tinh == "1"
+                      : formData.gioi_tinh == 1
                       ? "Nữ"
                       : formData.gioi_tinh == 2
                       ? "Khác"

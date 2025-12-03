@@ -15,7 +15,7 @@ export default function Header() {
     // Giả sử bạn lưu token và role trong localStorage/sessionStorage
     // Thay đổi logic này theo cách bạn lưu trữ authentication thực tế
     const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
     const role =
       localStorage.getItem("userRole") ||
       sessionStorage.getItem("userRole") ||
@@ -41,7 +41,6 @@ export default function Header() {
     : pathname.startsWith("/user") || (!isProvider && pathname !== "/");
 
   const providerMenu = [
-    { name: "Homepage", path: "/" },
     { name: "Dashboard", path: "/provider" },
     { name: "Lịch đặt", path: "/provider/appointments" },
     { name: "Dịch vụ của tôi", path: "/provider/services" },
@@ -60,10 +59,8 @@ export default function Header() {
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
     // Xóa thông tin đăng nhập
-    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userRole");
 
     // Reset state
     setIsLoggedIn(false);
@@ -117,7 +114,7 @@ export default function Header() {
             </h1>
 
             {/* Navigation Menu - ẩn khi ở homepage */}
-            {pathname !== "/" && isLoggedIn && (
+            {isLoggedIn && (
               <nav style={{ display: "flex", gap: "1.5rem" }}>
                 {currentMenu.map((item) => (
                   <button
@@ -162,7 +159,7 @@ export default function Header() {
               <NotificationBell notifications={[]} />
             )}
 
-            {/* Role Indicator + Switch - ẩn ở homepage, chỉ hiện khi đã đăng nhập */}
+            {/* Role Indicator + Switch - ẩn ở homepage, chỉ hiện khi đã đăng nhập
             {pathname !== "/" && isLoggedIn && (
               <div
                 style={{ display: "flex", alignItems: "center", gap: "1rem" }}
@@ -211,7 +208,7 @@ export default function Header() {
                   {isProvider ? "Chế độ Khách hàng" : "Chế độ Nhà cung cấp"}
                 </button>
               </div>
-            )}
+            )} */}
 
             {/* Ở HOMEPAGE: HIỂN THỊ ĐĂNG NHẬP / ĐĂNG KÝ HOẶC ĐĂNG XUẤT */}
             {pathname === "/" && (
@@ -325,19 +322,26 @@ export default function Header() {
                 style={{
                   backgroundColor: "#ef4444",
                   color: "white",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "0.375rem",
+                  padding: "0.6rem 1.5rem",
+                  borderRadius: "99px",
                   border: "none",
                   cursor: "pointer",
-                  fontWeight: "500",
-                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  fontSize: "0.9rem",
                   transition: "all 0.2s ease",
+                  boxShadow: "0 4px 6px -1px rgba(239, 68, 68, 0.2)",
                 }}
                 onMouseOver={(e) => {
                   e.target.style.backgroundColor = "#dc2626";
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow =
+                    "0 6px 10px -1px rgba(239, 68, 68, 0.3)";
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.backgroundColor = "#ef4444";
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow =
+                    "0 4px 6px -1px rgba(239, 68, 68, 0.2)";
                 }}
               >
                 Đăng xuất

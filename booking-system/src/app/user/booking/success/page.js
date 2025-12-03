@@ -339,10 +339,45 @@ export default function BookingSuccessPage() {
                     <span style={{ fontWeight: "600", color: "#1f2937" }}>
                       Tổng cộng:
                     </span>
+                    <span style={{ fontWeight: "bold", color: "#2563EB" }}>
+                      
+                      {bookingInfo.tong_tien_thanh_toan?.toLocaleString() || "0"} VND
+                    </span>
+                    
+                  </div>
+                   <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "18px",
+                      marginBlockStart: "8px",
+                      marginBlockEnd: "8px",
+                    }}
+                  >
+                    <span style={{ fontWeight: "600", color: "#1f2937" }}>
+                      Số tiền đã trả:
+                    </span>
                     <span style={{ fontWeight: "bold", color: "#059669" }}>
+                      
+                      {(bookingInfo.tong_tien_da_tra)?.toLocaleString() || "0"} VND
+                    </span>
+                    
+                  </div>
+                   <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "18px",
+                    }}
+                  >
+                    <span style={{ fontWeight: "600", color: "#1f2937" }}>
+                      Thanh toán tại quầy:
+                    </span>
+                    <span style={{ fontWeight: "bold", color: "#ff0505" }}>
                       
                       {tong_tien?.toLocaleString() || "0"} VND
                     </span>
+                    
                   </div>
                 </div>
               </div>

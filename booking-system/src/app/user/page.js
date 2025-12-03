@@ -9,6 +9,8 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [lich, setLich] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [passedAppointments, setPassedAppointments] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -18,7 +20,7 @@ export default function UserDashboard() {
           {
             method: "GET",
             headers: {
-            Authorization: 'Bearer '+ localStorage.getItem("authToken"),
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
             },
           }
         );
@@ -30,7 +32,72 @@ export default function UserDashboard() {
         setLoading(false);
       }
     };
+    const DataAppointments = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/lich-sap-toi",
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+         if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          router.push("/");
+          return;
+        }
+
+        const result = await response.json();
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true) {
+          console.log("Dữ liệu nhận từ API: ", result.data);
+          setUpcomingAppointments(result.data); 
+        } 
+      } catch (err) {
+        console.error("Lỗi API:", err);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+ const DataPassedAppointments = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/lich-da-qua",
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+         if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          router.push("/");
+          return;
+        }
+
+        const result = await response.json();
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true) {
+          console.log("Dữ liệu nhận từ API: ", result.data);
+          setPassedAppointments(result.data); 
+        } 
+      } catch (err) {
+        console.error("Lỗi API:", err);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
+    DataAppointments();
+    DataPassedAppointments();
 
     // hiển thị tên khách hàng
     try {
@@ -51,29 +118,29 @@ export default function UserDashboard() {
     }
   }, []);
 
-  const upcomingAppointments = [
-    {
-      id: 1,
-      service: "Cắt tóc nam",
-      provider: "Barber Pro",
-      date: "Hôm nay, 15:30",
-      status: "Sắp tới",
-    },
-    {
-      id: 2,
-      service: "Massage thư giãn",
-      provider: "Spa Relax",
-      date: "Ngày mai, 14:00",
-      status: "Đã xác nhận",
-    },
-    {
-      id: 3,
-      service: "Chăm sóc da",
-      provider: "Beauty Center",
-      date: "15/10, 10:00",
-      status: "Đã xác nhận",
-    },
-  ];
+  // const upcomingAppointments = [
+  //   {
+  //     id: 1,
+  //     service: "Cắt tóc nam",
+  //     provider: "Barber Pro",
+  //     date: "Hôm nay, 15:30",
+  //     status: "Sắp tới",
+  //   },
+  //   {
+  //     id: 2,
+  //     service: "Massage thư giãn",
+  //     provider: "Spa Relax",
+  //     date: "Ngày mai, 14:00",
+  //     status: "Đã xác nhận",
+  //   },
+  //   {
+  //     id: 3,
+  //     service: "Chăm sóc da",
+  //     provider: "Beauty Center",
+  //     date: "15/10, 10:00",
+  //     status: "Đã xác nhận",
+  //   },
+  // ];
 
   const quickActions = [
     {
@@ -103,7 +170,11 @@ export default function UserDashboard() {
   ];
 
   const stats = [
-    { label: "Lịch hẹn sắp tới", value: lich.so_lich_sap_toi, color: "#2563eb" },
+    {
+      label: "Lịch hẹn sắp tới",
+      value: lich.so_lich_sap_toi,
+      color: "#2563eb",
+    },
     { label: "Dịch vụ đã dùng", value: lich.so_lich_da_qua, color: "#16a34a" },
     { label: "Đánh giá đã gửi", value: "8", color: "#dc2626" },
     { label: "Điểm tích lũy", value: lich.diem_tich_luy, color: "#eab308" },
@@ -151,7 +222,8 @@ export default function UserDashboard() {
             Xin chào, {user?.name || "Người dùng"}! 👋
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
-            Chúc bạn một ngày tốt lành. Bạn có <b>{lich.so_lich_sap_toi}</b> lịch hẹn sắp tới.
+            Chúc bạn một ngày tốt lành. Bạn có <b>{lich.so_lich_sap_toi}</b>{" "}
+            lịch hẹn sắp tới.
           </p>
         </div>
 
@@ -304,7 +376,7 @@ export default function UserDashboard() {
                             fontSize: "0.875rem",
                           }}
                         >
-                          {appointment.service}
+                          {appointment.ten_san_pham}
                         </h3>
                         <span
                           style={{
@@ -313,16 +385,16 @@ export default function UserDashboard() {
                             padding: "0.25rem 0.5rem",
                             borderRadius: "12px",
                             backgroundColor:
-                              appointment.status === "Sắp tới"
+                              appointment.trang_thai === 0
                                 ? "#fef3c7"
                                 : "#d1fae5",
                             color:
-                              appointment.status === "Sắp tới"
+                              appointment.trang_thai === 1
                                 ? "#92400e"
                                 : "#065f46",
                           }}
                         >
-                          {appointment.status}
+                          {appointment.trang_thai ===0 ? "Chờ xác nhận" : "Đã xác nhận"}
                         </span>
                       </div>
                       <p
@@ -332,7 +404,7 @@ export default function UserDashboard() {
                           marginBottom: "0.25rem",
                         }}
                       >
-                        {appointment.provider}
+                        {appointment.ten_thuong_hieu}
                       </p>
                       <p
                         style={{
@@ -341,7 +413,7 @@ export default function UserDashboard() {
                           fontWeight: "500",
                         }}
                       >
-                        {appointment.date}
+                        {appointment.thoi_gian} ngày {appointment.ngay_dat_lich}
                       </p>
                     </div>
                   </div>
@@ -455,8 +527,7 @@ export default function UserDashboard() {
                   gap: "1rem",
                 }}
               >
-                {[
-                  {
+                {/* passedAppointments.map((appointment) => ({
                     action: "Đã đặt lịch",
                     service: "Cắt tóc nam",
                     time: "2 giờ trước",
@@ -470,8 +541,8 @@ export default function UserDashboard() {
                     action: "Đã đánh giá",
                     service: "Spa thư giãn",
                     time: "2 ngày trước",
-                  },
-                ].map((activity, index) => (
+                  },  */}
+                {passedAppointments.map((activity, index) => (
                   <div
                     key={index}
                     style={{
@@ -498,13 +569,13 @@ export default function UserDashboard() {
                           marginBottom: "0.125rem",
                         }}
                       >
-                        {activity.action}:{" "}
+                        {"Đã đặt lịch tại"}:{" "}
                         <span style={{ color: "#6b7280" }}>
-                          {activity.service}
+                          {activity.ten_thuong_hieu}
                         </span>
                       </p>
                       <p style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
-                        {activity.time}
+                        {activity.thoi_gian + ", " + activity.ngay_dat_lich }
                       </p>
                     </div>
                   </div>
