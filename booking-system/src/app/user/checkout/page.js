@@ -1,63 +1,185 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MainContent from "@/components/Layout/MainContent";
 
 export default function PaymentPage() {
   const router = useRouter();
-  const [paymentInfo, setPaymentInfo] = useState();
+  const [paymentInfo, setPaymentInfo] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Hàm validate dữ liệu từ API
+  const validatePaymentData = (data) => {
+    if (!data) {
+      return { isValid: false, message: "Không có dữ liệu thanh toán" };
+    }
+
+    // Kiểm tra các trường bắt buộc
+    const requiredFields = [
+      "ten_san_pham",
+      "tong_tien_thanh_toan",
+      "tong_tien_da_tra",
+      "ngay_dat_lich",
+      "thoi_gian",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !data[field]);
+
+    if (missingFields.length > 0) {
+      return {
+        isValid: false,
+        message: `Thiếu thông tin bắt buộc: ${missingFields.join(", ")}`,
+      };
+    }
+
+    // Kiểm tra kiểu dữ liệu
+    if (
+      typeof data.tong_tien_thanh_toan !== "number" ||
+      data.tong_tien_thanh_toan <= 0
+    ) {
+      return { isValid: false, message: "Tổng tiền thanh toán không hợp lệ" };
+    }
+
+    if (
+      typeof data.tong_tien_da_tra !== "number" ||
+      data.tong_tien_da_tra < 0
+    ) {
+      return { isValid: false, message: "Số tiền đã trả không hợp lệ" };
+    }
+
+    if (data.tong_tien_da_tra > data.tong_tien_thanh_toan) {
+      return {
+        isValid: false,
+        message: "Số tiền đã trả không được lớn hơn tổng tiền",
+      };
+    }
+
+    // Kiểm tra ngày đặt lịch
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(data.ngay_dat_lich);
+    bookingDate.setHours(0, 0, 0, 0);
+
+    if (bookingDate < today) {
+      return {
+        isValid: false,
+        message: "Ngày đặt lịch không hợp lệ (không được ở quá khứ)",
+      };
+    }
+
+    return { isValid: true, message: "Dữ liệu hợp lệ" };
+  };
 
   useEffect(() => {
-     const fetchdata = async () => {
+    const fetchPaymentData = async () => {
       try {
         setIsLoading(true);
-        const token = localStorage.getItem("authToken");
+        setError(null);
+
+        // Lấy token từ localStorage
+        const token =
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("token") ||
+          sessionStorage.getItem("authToken") ||
+          sessionStorage.getItem("token");
+
+        if (!token) {
+          setError("Vui lòng đăng nhập để tiếp tục thanh toán");
+          setTimeout(() => {
+            router.push("/login");
+          }, 2000);
+          setIsLoading(false);
+          return;
+        }
+
+        // Gọi API THẬT từ server của bạn
         const response = await fetch(
           "http://127.0.0.1:8000/api/dat-lich/lich-moi-dat",
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "Bearer " + token,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
+
+        // Xử lý response
         if (!response.ok) {
-          console.warn("Không thể kết nối API");
-          return false;
+          const errorText = await response.text();
+          console.error("API Error:", response.status, errorText);
+
+          // Xử lý các mã lỗi HTTP
+          if (response.status === 401) {
+            setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại");
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("token");
+            setTimeout(() => {
+              router.push("/login");
+            }, 2000);
+          } else if (response.status === 404) {
+            setError(
+              "Không tìm thấy thông tin thanh toán. Vui lòng đặt lịch trước."
+            );
+            setTimeout(() => {
+              router.push("/user");
+            }, 3000);
+          } else if (response.status >= 500) {
+            setError("Lỗi máy chủ. Vui lòng thử lại sau");
+          } else {
+            setError(`Lỗi ${response.status}: Không thể kết nối đến hệ thống`);
+          }
+
+          setIsLoading(false);
+          return;
         }
+
         const result = await response.json();
-        if (result.status) {
-          console.log("Dữ liệu thanh toán:", result.data);
-          setPaymentInfo(result.data);
+        console.log("API Response:", result);
+
+        if (result.status === true && result.data) {
+          const validation = validatePaymentData(result.data);
+
+          if (validation.isValid) {
+            console.log("Dữ liệu thanh toán hợp lệ:", result.data);
+            setPaymentInfo(result.data);
+          } else {
+            setError(validation.message);
+            console.warn("Dữ liệu không hợp lệ:", validation.message);
+          }
+        } else {
+          setError(
+            result.message || "Không tìm thấy thông tin thanh toán hợp lệ"
+          );
+
+          // Nếu không có booking mới, kiểm tra xem có booking cũ không
+          if (result.message && result.message.includes("không có")) {
+            setTimeout(() => {
+              router.push("/user/my-appointments");
+            }, 3000);
+          }
         }
       } catch (err) {
-        console.error("Lỗi:", err);
-        return false;
-      }finally {
+        console.error("Lỗi kết nối:", err);
+
+        if (err.name === "TypeError" && err.message.includes("fetch")) {
+          setError(
+            "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng"
+          );
+        } else if (err.name === "SyntaxError") {
+          setError("Dữ liệu trả về không hợp lệ");
+        } else {
+          setError("Đã xảy ra lỗi không xác định. Vui lòng thử lại sau");
+        }
+      } finally {
         setIsLoading(false);
       }
     };
-    // const info = localStorage.getItem("paymentInfo");
-    // const info = localStorage.getItem("paymentInfo");
-    // if (info) {
-    //   try {
-    //     setPaymentInfo(JSON.parse(info));
-    //   } catch (error) {
-    //     console.error("Error parsing paymentInfo:", error);
-    //     alert("Thông tin thanh toán không hợp lệ, đang quay về trang chủ.");
-    //     router.push("/");
-    //   }
-    // } else {
-    //   alert("Không tìm thấy thông tin thanh toán, đang quay về trang chủ.");
-    //   router.push("/");
-    // }
-    fetchdata();
+
+    fetchPaymentData();
   }, [router]);
 
   const handlePayment = (method = "test") => {
@@ -65,7 +187,14 @@ export default function PaymentPage() {
       setSelectedMethod("test");
     }
 
+    // Validate trước khi thanh toán
+    if (!paymentInfo) {
+      setError("Không có thông tin thanh toán để xử lý");
+      return;
+    }
+
     setIsProcessing(true);
+    setError(null);
 
     // Mô phỏng xử lý thanh toán
     setTimeout(() => {
@@ -77,19 +206,36 @@ export default function PaymentPage() {
         paymentMethod: method === "counter" ? "counter" : "online",
         bookingId: `BK${Date.now()}`,
         bookingDate: new Date().toISOString(),
+        paymentStatus: method === "test" ? "completed" : "pending",
+        transactionId: `TX${Date.now().toString().slice(-8)}`,
       };
 
       // Lưu bookingInfo để trang success đọc
       try {
         localStorage.setItem("bookingInfo", JSON.stringify(bookingInfo));
+        localStorage.setItem("lastPaymentInfo", JSON.stringify(paymentInfo));
+        console.log("Đã lưu thông tin booking:", bookingInfo);
+
+        // Nếu là thanh toán thật, gọi API để xác nhận thanh toán
+        if (method !== "test") {
+          // Gọi API xác nhận thanh toán thật ở đây
+          console.log("Gọi API xác nhận thanh toán thật cho method:", method);
+        }
       } catch (error) {
         console.error("Error saving to localStorage:", error);
-        alert("Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại.");
+        setError("Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại.");
         setIsProcessing(false);
         return;
       }
 
       setIsProcessing(false);
+
+      // Chuyển hướng đến trang thành công
+      // if (method === "test") {
+      //   // Demo: alert thành công trước khi redirect
+      //   alert("Thanh toán demo thành công! Đang chuyển hướng...");
+      // }
+
       router.push("/user/booking/success");
     }, 2000);
   };
@@ -115,7 +261,8 @@ export default function PaymentPage() {
     },
   ];
 
-  if (!paymentInfo) {
+  // Hiển thị loading
+  if (isLoading) {
     return (
       <MainContent>
         <div
@@ -150,6 +297,15 @@ export default function PaymentPage() {
               }}
             ></div>
             <p style={{ color: "#6b7280" }}>Đang tải thông tin thanh toán...</p>
+            <p
+              style={{
+                color: "#9ca3af",
+                fontSize: "0.875rem",
+                marginTop: "8px",
+              }}
+            >
+              Kết nối đến máy chủ...
+            </p>
           </div>
 
           <style jsx>{`
@@ -166,11 +322,163 @@ export default function PaymentPage() {
       </MainContent>
     );
   }
-    const tong_tien = paymentInfo.tong_tien_thanh_toan - paymentInfo.tong_tien_da_tra;
-    const phan_tram_thanh_toan = (paymentInfo.tong_tien_thanh_toan ===  paymentInfo.tong_tien_da_tra) ? "100%" :"30%" ;
+
+  // Hiển thị lỗi
+  if (error && !paymentInfo) {
+    return (
+      <MainContent>
+        <div
+          style={{
+            minHeight: "60vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "32px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              maxWidth: "672px",
+              width: "100%",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                backgroundColor: "#fee2e2",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <span style={{ fontSize: "32px", color: "#dc2626" }}>⚠️</span>
+            </div>
+            <h3
+              style={{
+                fontSize: "20px",
+                fontWeight: "bold",
+                color: "#dc2626",
+                marginBottom: "12px",
+              }}
+            >
+              Có lỗi xảy ra
+            </h3>
+            <p
+              style={{
+                color: "#6b7280",
+                marginBottom: "24px",
+                lineHeight: "1.5",
+                maxWidth: "500px",
+              }}
+            >
+              {error}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                onClick={() => router.back()}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#f3f4f6",
+                  color: "#374151",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#e5e7eb")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#f3f4f6")
+                }
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setIsLoading(true);
+                  // Reload lại trang để thử fetch lại
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
+                }}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#2563eb")
+                }
+              >
+                Thử lại
+              </button>
+              <button
+                onClick={() => router.push("/user/my-appointments")}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#059669")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#10b981")
+                }
+              >
+                Xem lịch hẹn
+              </button>
+            </div>
+          </div>
+        </div>
+      </MainContent>
+    );
+  }
+
+  // Tính toán các giá trị tiền
+  const tong_tien =
+    paymentInfo.tong_tien_thanh_toan - paymentInfo.tong_tien_da_tra;
+  const phan_tram_thanh_toan =
+    paymentInfo.tong_tien_thanh_toan === paymentInfo.tong_tien_da_tra
+      ? "100%"
+      : `${Math.round(
+          (paymentInfo.tong_tien_da_tra / paymentInfo.tong_tien_thanh_toan) *
+            100
+        )}%`;
+
   return (
     <MainContent>
-      
       <div
         style={{
           minHeight: "80vh",
@@ -184,6 +492,61 @@ export default function PaymentPage() {
             margin: "0 auto",
           }}
         >
+          {/* Error Banner */}
+          {error && (
+            <div
+              style={{
+                backgroundColor: "#fee2e2",
+                border: "1px solid #fca5a5",
+                borderRadius: "8px",
+                padding: "16px 20px",
+                marginBottom: "24px",
+                display: "flex",
+                alignItems: "flex-start",
+                animation: "fadeIn 0.3s ease",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "20px",
+                  color: "#dc2626",
+                  marginRight: "12px",
+                  marginTop: "2px",
+                }}
+              >
+                ⚠️
+              </span>
+              <div style={{ flex: 1 }}>
+                <p
+                  style={{
+                    color: "#dc2626",
+                    fontWeight: "500",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Thông báo
+                </p>
+                <p style={{ color: "#7f1d1d", fontSize: "14px" }}>{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#7f1d1d",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                  padding: "0 4px",
+                  transition: "color 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.color = "#dc2626")}
+                onMouseOut={(e) => (e.currentTarget.style.color = "#7f1d1d")}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {/* Header */}
           <div
             style={{
@@ -203,14 +566,15 @@ export default function PaymentPage() {
                 borderRadius: "8px",
                 cursor: "pointer",
                 margin: "0 auto 24px",
+                transition: "all 0.2s ease",
               }}
               onMouseOver={(e) => {
-                e.target.style.color = "#374151";
-                e.target.style.backgroundColor = "#f3f4f6";
+                e.currentTarget.style.color = "#374151";
+                e.currentTarget.style.backgroundColor = "#f3f4f6";
               }}
               onMouseOut={(e) => {
-                e.target.style.color = "#6b7280";
-                e.target.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = "#6b7280";
+                e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
               <span style={{ marginRight: "8px" }}>←</span>
@@ -336,7 +700,8 @@ export default function PaymentPage() {
                       fontSize: "18px",
                     }}
                   >
-                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"} VND
+                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"}{" "}
+                    VND
                   </span>
                 </div>
               </div>
@@ -360,7 +725,8 @@ export default function PaymentPage() {
                     Tổng tiền:
                   </span>
                   <span style={{ fontWeight: "bold", color: "#1f2937" }}>
-                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"} VND
+                    {paymentInfo.tong_tien_thanh_toan?.toLocaleString() || "0"}{" "}
+                    VND
                   </span>
                 </div>
 
@@ -372,7 +738,7 @@ export default function PaymentPage() {
                     padding: "24px",
                   }}
                 >
-                  <div 
+                  <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -387,7 +753,10 @@ export default function PaymentPage() {
                         fontSize: "20px",
                       }}
                     >
-                      Số tiền thanh toán: <p>{phan_tram_thanh_toan}</p>
+                      Số tiền thanh toán:{" "}
+                      <span style={{ fontSize: "14px", color: "#92400e" }}>
+                        {phan_tram_thanh_toan}
+                      </span>
                     </span>
                     <span
                       style={{
@@ -396,11 +765,13 @@ export default function PaymentPage() {
                         fontSize: "24px",
                       }}
                     >
-                      {paymentInfo.tong_tien_da_tra?.toLocaleString() || "0"} VND
+                      {paymentInfo.tong_tien_da_tra?.toLocaleString() || "0"}{" "}
+                      VND
                     </span>
                   </div>
 
-                  {paymentInfo.paymentType === "deposit" && (
+                  {paymentInfo.tong_tien_da_tra <
+                    paymentInfo.tong_tien_thanh_toan && (
                     <div
                       style={{
                         fontSize: "14px",
@@ -420,13 +791,12 @@ export default function PaymentPage() {
                         }}
                       >
                         <span style={{ marginRight: "4px" }}>⏰</span>
-                        Đặt cọc trước
+                        Số tiền còn lại
                       </div>
                       <p style={{ color: "#6b7280", lineHeight: "1.5" }}>
                         Số tiền còn lại{" "}
-                        <span style={{ fontWeight: "600" }}>
-                          {paymentInfo.remainingAmount?.toLocaleString() || "0"}{" "}
-                          VND
+                        <span style={{ fontWeight: "600", color: "#dc2626" }}>
+                          {tong_tien.toLocaleString()} VND
                         </span>{" "}
                         sẽ được thanh toán tại quầy khi sử dụng dịch vụ.
                       </p>
@@ -478,12 +848,18 @@ export default function PaymentPage() {
                   <button
                     key={method.id}
                     onClick={() => {
+                      if (error) {
+                        setError(
+                          "Vui lòng giải quyết vấn đề trước khi thanh toán"
+                        );
+                        return;
+                      }
                       setSelectedMethod(method.id);
                       if (method.id === "test") {
                         handlePayment("test");
                       }
                     }}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !!error}
                     style={{
                       width: "100%",
                       padding: "24px",
@@ -491,8 +867,8 @@ export default function PaymentPage() {
                       borderRadius: "12px",
                       fontWeight: "600",
                       border: "none",
-                      cursor: isProcessing ? "not-allowed" : "pointer",
-                      opacity: isProcessing ? 0.6 : 1,
+                      cursor: isProcessing || error ? "not-allowed" : "pointer",
+                      opacity: isProcessing || error ? 0.6 : 1,
                       marginBottom: "16px",
                       display: "flex",
                       alignItems: "center",
@@ -506,16 +882,16 @@ export default function PaymentPage() {
                           : "linear-gradient(135deg, #6b7280, #4b5563)",
                     }}
                     onMouseOver={(e) => {
-                      if (!isProcessing) {
-                        e.target.style.transform = "translateY(-3px)";
-                        e.target.style.boxShadow =
+                      if (!isProcessing && !error) {
+                        e.currentTarget.style.transform = "translateY(-3px)";
+                        e.currentTarget.style.boxShadow =
                           "0 10px 25px rgba(0, 0, 0, 0.2)";
                       }
                     }}
                     onMouseOut={(e) => {
-                      if (!isProcessing) {
-                        e.target.style.transform = "translateY(0)";
-                        e.target.style.boxShadow = "none";
+                      if (!isProcessing && !error) {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
                       }
                     }}
                   >
@@ -622,7 +998,7 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {/* Processing Overlay */}
+          Processing Overlay
           {isProcessing && (
             <div
               style={{
@@ -636,6 +1012,7 @@ export default function PaymentPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 zIndex: 50,
+                animation: "fadeIn 0.3s ease",
               }}
             >
               <div
@@ -693,30 +1070,40 @@ export default function PaymentPage() {
                   ></div>
                 </div>
               </div>
-
-              <style jsx>{`
-                @keyframes spin {
-                  0% {
-                    transform: rotate(0deg);
-                  }
-                  100% {
-                    transform: rotate(360deg);
-                  }
-                }
-                @keyframes pulse {
-                  0%,
-                  100% {
-                    opacity: 1;
-                  }
-                  50% {
-                    opacity: 0.5;
-                  }
-                }
-              `}</style>
             </div>
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </MainContent>
   );
 }

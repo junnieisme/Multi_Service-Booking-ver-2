@@ -5,72 +5,103 @@ import MainContent from "@/components/Layout/MainContent";
 export default function MyAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(false);
 
-  // TODO: Call API to get user appointments
   useEffect(() => {
-    // Mock data - Đã cập nhật ngày tháng cho hợp lý
-    setAppointments([
-      {
-        id: 1,
-        serviceName: "Cắt tóc nam cao cấp",
-        date: "2025-11-20", // Sắp tới
-        time: "10:00",
-        status: "confirmed",
-        provider: "Barber Shop ABC",
-        price: 150000,
-        duration: "30 phút",
-        address: "123 Nguyễn Huệ, Q.1, TP.HCM",
-        image: "✂️",
-      },
-      {
-        id: 2,
-        serviceName: "Massage thư giãn toàn thân",
-        date: "2025-11-22", // Sắp tới (nhưng pending)
-        time: "14:00",
-        status: "pending",
-        provider: "Spa Relax Center",
-        price: 300000,
-        duration: "60 phút",
-        address: "456 Lê Lợi, Q.3, TP.HCM",
-        image: "💆",
-      },
-      {
-        id: 3,
-        serviceName: "Chăm sóc da mặt chuyên sâu",
-        date: "2025-11-10", // Đã qua
-        time: "09:00",
-        status: "completed",
-        provider: "Beauty Spa",
-        price: 500000,
-        duration: "90 phút",
-        address: "789 Hai Bà Trưng, Q.1, TP.HCM",
-        image: "✨",
-      },
-      {
-        id: 4,
-        serviceName: "Cắt tỉa lông mày",
-        date: "2025-11-08", // Đã qua
-        time: "16:00",
-        status: "cancelled",
-        provider: "Nail & Beauty",
-        price: 80000,
-        duration: "20 phút",
-        address: "321 Lý Tự Trọng, Q.1, TP.HCM",
-        image: "💅",
-      },
-      {
-        id: 5,
-        serviceName: "Làm móng",
-        date: "2025-11-12", // Đã qua, nhưng status vẫn là "confirmed"
-        time: "15:00",
-        status: "confirmed",
-        provider: "Nail & Beauty",
-        price: 100000,
-        duration: "40 phút",
-        address: "321 Lý Tự Trọng, Q.1, TP.HCM",
-        image: "💅",
-      },
-    ]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/get-lich-by-kh",
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API");
+          router.push("/");
+          return;
+        }
+
+        const result = await response.json();
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true) {
+          console.log("Dữ liệu nhận từ API: ", result.data);
+          setAppointments(result.data);
+        }
+      } catch (err) {
+        console.error("Lỗi API:", err);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    // setAppointments([
+    //   {
+    //     id: 1,
+    //     serviceName: "Cắt tóc nam cao cấp",
+    //     date: "2025-11-20", // Sắp tới
+    //     time: "10:00",
+    //     status: "confirmed",
+    //     provider: "Barber Shop ABC",
+    //     price: 150000,
+    //     duration: "30 phút",
+    //     address: "123 Nguyễn Huệ, Q.1, TP.HCM",
+    //     image: "✂️",
+    //   },
+    //   {
+    //     id: 2,
+    //     serviceName: "Massage thư giãn toàn thân",
+    //     date: "2025-11-22", // Sắp tới (nhưng pending)
+    //     time: "14:00",
+    //     status: "pending",
+    //     provider: "Spa Relax Center",
+    //     price: 300000,
+    //     duration: "60 phút",
+    //     address: "456 Lê Lợi, Q.3, TP.HCM",
+    //     image: "💆",
+    //   },
+    //   {
+    //     id: 3,
+    //     serviceName: "Chăm sóc da mặt chuyên sâu",
+    //     date: "2025-11-10", // Đã qua
+    //     time: "09:00",
+    //     status: "completed",
+    //     provider: "Beauty Spa",
+    //     price: 500000,
+    //     duration: "90 phút",
+    //     address: "789 Hai Bà Trưng, Q.1, TP.HCM",
+    //     image: "✨",
+    //   },
+    //   {
+    //     id: 4,
+    //     serviceName: "Cắt tỉa lông mày",
+    //     date: "2025-11-08", // Đã qua
+    //     time: "16:00",
+    //     status: "cancelled",
+    //     provider: "Nail & Beauty",
+    //     price: 80000,
+    //     duration: "20 phút",
+    //     address: "321 Lý Tự Trọng, Q.1, TP.HCM",
+    //     image: "💅",
+    //   },
+    //   {
+    //     id: 5,
+    //     serviceName: "Làm móng",
+    //     date: "2025-11-12", // Đã qua, nhưng status vẫn là "confirmed"
+    //     time: "15:00",
+    //     status: "confirmed",
+    //     provider: "Nail & Beauty",
+    //     price: 100000,
+    //     duration: "40 phút",
+    //     address: "321 Lý Tự Trọng, Q.1, TP.HCM",
+    //     image: "💅",
+    //   },
+    // ]);
   }, []);
 
   // Logic lọc "phù hợp" với ngày hiện tại
@@ -80,27 +111,27 @@ export default function MyAppointments() {
   const filteredAppointments = appointments.filter((apt) => {
     if (filter === "all") return true;
 
-    if (filter === "confirmed") {
-      const aptDate = new Date(apt.date);
-      aptDate.setHours(0, 0, 0, 0); // Chuẩn hóa ngày hẹn
-      // "Sắp tới" (confirmed) NGHĨA LÀ đã xác nhận VÀ chưa diễn ra
-      return apt.status === "confirmed" && aptDate >= today;
-    }
+    // if (filter === "confirmed") {
+    //   const aptDate = new Date(apt.ngay_dat_lich);
+    //   aptDate.setHours(0, 0, 0, 0); // Chuẩn hóa ngày hẹn
+    //   // "Sắp tới" (confirmed) NGHĨA LÀ đã xác nhận VÀ chưa diễn ra
+    //   return apt.trang_thai === "confirmed" && aptDate >= today;
+    // }
 
     // Các filter còn lại ("pending", "completed", "cancelled") giữ nguyên logic cũ
-    return apt.status === filter;
+    return apt.trang_thai === filter;
   });
 
   const getStatusText = (status) => {
     switch (status) {
-      case "confirmed":
-        return "Đã xác nhận";
-      case "pending":
+      case 0:
         return "Chờ xác nhận";
-      case "completed":
-        return "Đã hoàn thành";
-      case "cancelled":
+      case 1:
+        return "Đã xác nhận";
+      case 2:
         return "Đã hủy";
+      // case 3:
+      //   return "Đã hủy";
       default:
         return status;
     }
@@ -108,13 +139,14 @@ export default function MyAppointments() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "confirmed":
-        return "#10b981";
-      case "pending":
+       case 0:
         return "#f59e0b";
-      case "completed":
-        return "#3b82f6";
-      case "cancelled":
+      case 1:
+        return "#10b981";
+     
+      // case 2:
+      //   return "#3b82f6";
+      case 2:
         return "#ef4444";
       default:
         return "#6b7280";
@@ -123,10 +155,34 @@ export default function MyAppointments() {
 
   const cancelAppointment = async (appointmentId) => {
     if (confirm("Bạn có chắc muốn hủy lịch hẹn này?")) {
-      console.log("Cancel appointment:", appointmentId);
-      // TODO: Call API to cancel appointment
-      alert("Hủy lịch hẹn thành công!");
-      // TODO: Refetch appointments or update state
+      const changeStatus = async () => {
+        try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/dat-lich/huy-lich/"+appointmentId,
+          {
+            method: "POST",
+          }
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API");
+
+          return;
+        }
+
+        const result = await response.json();
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true) {
+          alert(result.message);
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("Lỗi API:", err);
+      } finally {
+        setLoading(false);
+      }
+      }
+      changeStatus();
     }
   };
 
@@ -176,10 +232,10 @@ export default function MyAppointments() {
         >
           {[
             { key: "all", label: "Tất cả" },
-            { key: "pending", label: "Chờ xác nhận" },
-            { key: "confirmed", label: "Sắp tới" },
-            { key: "completed", label: "Hoàn thành" },
-            { key: "cancelled", label: "Đã hủy" },
+            { key: 0, label: "Chờ xác nhận" },
+            { key: 1, label: "Đã xác nhận" },
+            { key: 2, label: "Đã hủy" },
+            // { key: 3, label: "Đã hủy" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -287,7 +343,7 @@ export default function MyAppointments() {
                     fontSize: "3rem",
                     backgroundColor: "#f8fafc",
                     borderRadius: "12px",
-                    padding: "1.5rem",
+                    padding: "0.5rem",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -295,7 +351,15 @@ export default function MyAppointments() {
                     minHeight: "100px",
                   }}
                 >
-                  {apt.image}
+                  <img
+                    src={apt.hinh_anh}
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "cover",
+                      borderRadius: "10px",
+                    }}
+                  />
                 </div>
 
                 {/* CỘT 2: TOÀN BỘ THÔNG TIN TEXT */}
@@ -308,7 +372,7 @@ export default function MyAppointments() {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    {apt.serviceName}
+                    {apt.ten_san_pham}
                   </h3>
 
                   {/* Nhóm Status, Price, Duration */}
@@ -324,15 +388,15 @@ export default function MyAppointments() {
                     <span
                       style={{
                         padding: "0.25rem 0.75rem",
-                        backgroundColor: getStatusColor(apt.status) + "15",
-                        color: getStatusColor(apt.status),
+                        backgroundColor: getStatusColor(apt.trang_thai) + "15",
+                        color: getStatusColor(apt.trang_thai),
                         borderRadius: "20px",
                         fontSize: "0.75rem",
                         fontWeight: "600",
-                        border: `1px solid ${getStatusColor(apt.status)}30`,
+                        border: `1px solid ${getStatusColor(apt.trang_thai)}30`,
                       }}
                     >
-                      {getStatusText(apt.status)}
+                      {getStatusText(apt.trang_thai)}
                     </span>
                     <span
                       style={{
@@ -341,7 +405,9 @@ export default function MyAppointments() {
                         color: "#1f2937",
                       }}
                     >
-                      <strong>{apt.price.toLocaleString()} VND</strong>
+                      <strong>
+                        {apt.tong_tien_thanh_toan.toLocaleString()} VND
+                      </strong>
                     </span>
                     <span
                       style={{
@@ -353,7 +419,7 @@ export default function MyAppointments() {
                         fontWeight: "500",
                       }}
                     >
-                      {apt.duration}
+                      Đã thanh toán: {apt.tong_tien_da_tra.toLocaleString()} VND
                     </span>
                   </div>
 
@@ -390,7 +456,7 @@ export default function MyAppointments() {
                             color: "#374151",
                           }}
                         >
-                          {apt.provider}
+                          {apt.ten_thuong_hieu}
                         </div>
                       </div>
                     </div>
@@ -419,7 +485,7 @@ export default function MyAppointments() {
                             color: "#374151",
                           }}
                         >
-                          {apt.address}
+                          {apt.dia_chi_cu_the + ", " + apt.tinh_thanh}
                         </div>
                       </div>
                     </div>
@@ -449,7 +515,7 @@ export default function MyAppointments() {
                             color: "#1f2937",
                           }}
                         >
-                          {formatDate(apt.date)}
+                          {formatDate(apt.ngay_dat_lich)}
                         </div>
                       </div>
                     </div>
@@ -479,7 +545,7 @@ export default function MyAppointments() {
                             color: "#1f2937",
                           }}
                         >
-                          {apt.time}
+                          {apt.thoi_gian}
                         </div>
                       </div>
                     </div>
@@ -487,6 +553,7 @@ export default function MyAppointments() {
                 </div>
 
                 {/* CỘT 3: NHÓM NÚT BẤM */}
+
                 <div
                   style={{
                     display: "flex",
@@ -495,10 +562,11 @@ export default function MyAppointments() {
                     minWidth: "140px",
                   }}
                 >
-                  {(apt.status === "pending" ||
-                    (apt.status === "confirmed" &&
-                      new Date(apt.date) >= today)) && ( // Chỉ hiện hủy/đặt lại cho lịch Sắp tới
+                  {(apt.trang_thai === 0 ||
+                    (apt.trang_thai === 1 &&
+                      new Date(apt.ngay_dat_lich) >= today)) && ( // Chỉ hiện hủy/đặt lại cho lịch Sắp tới
                     <>
+                    
                       <button
                         onClick={() => cancelAppointment(apt.id)}
                         style={{
@@ -519,9 +587,79 @@ export default function MyAppointments() {
                           e.target.style.backgroundColor = "white";
                         }}
                       >
-                        Hủy lịch
+                        Hủy lịch & Hoàn tiền
                       </button>
                       <button
+                      onClick={() => console.log("View details:", apt.id)}
+                      style={{
+                        padding: "0.75rem 1rem",
+                        border: "1px solid #10b981",
+                        borderRadius: "8px",
+                        backgroundColor: "white",
+                        color: "#10b981",
+                        fontSize: "0.875rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = "#ecfdf5";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = "white";
+                      }}
+                    >
+                      Xem chi tiết
+                    </button>
+                      {/* <button
+                        onClick={() => rescheduleAppointment(apt.id)}
+                        style={{
+                          padding: "0.75rem 1rem",
+                          border: "1px solid #3b82f6",
+                          borderRadius: "8px",
+                          backgroundColor: "white",
+                          color: "#3b82f6",
+                          fontSize: "0.875rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.backgroundColor = "#eff6ff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "white";
+                        }}
+                      >
+                        Đặt lại lịch
+                      </button> */}
+                    </>
+                  )}
+                 
+                  {apt.trang_thai === 2 && (
+                    // <button
+                    //   onClick={() => console.log("Book again:", apt.id)}
+                    //   style={{
+                    //     padding: "0.75rem 1rem",
+                    //     border: "1px solid #6b7280",
+                    //     borderRadius: "8px",
+                    //     backgroundColor: "white",
+                    //     color: "#6b7280",
+                    //     fontSize: "0.875rem",
+                    //     fontWeight: "600",
+                    //     cursor: "pointer",
+                    //     transition: "all 0.2s",
+                    //   }}
+                    //   onMouseOver={(e) => {
+                    //     e.target.style.backgroundColor = "#f9fafb";
+                    //   }}
+                    //   onMouseLeave={(e) => {
+                    //     e.target.style.backgroundColor = "white";
+                    //   }}
+                    // >
+                    //   Đặt lại
+                    // </button>
+                     <button
                         onClick={() => rescheduleAppointment(apt.id)}
                         style={{
                           padding: "0.75rem 1rem",
@@ -543,9 +681,8 @@ export default function MyAppointments() {
                       >
                         Đặt lại lịch
                       </button>
-                    </>
                   )}
-                  {apt.status === "completed" && (
+                   {apt.trang_thai === 2 && (
                     <button
                       onClick={() => console.log("View details:", apt.id)}
                       style={{
@@ -569,55 +706,32 @@ export default function MyAppointments() {
                       Xem chi tiết
                     </button>
                   )}
-                  {apt.status === "cancelled" && (
-                    <button
-                      onClick={() => console.log("Book again:", apt.id)}
-                      style={{
-                        padding: "0.75rem 1rem",
-                        border: "1px solid #6b7280",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        color: "#6b7280",
-                        fontSize: "0.875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.backgroundColor = "#f9fafb";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = "white";
-                      }}
-                    >
-                      Đặt lại
-                    </button>
-                  )}
                   {/* Nút "Xem chi tiết" cho lịch đã qua nhưng vẫn "confirmed" */}
-                  {apt.status === "confirmed" && new Date(apt.date) < today && (
-                    <button
-                      onClick={() => console.log("View details:", apt.id)}
-                      style={{
-                        padding: "0.75rem 1rem",
-                        border: "1px solid #6b7280",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        color: "#6b7280",
-                        fontSize: "0.875rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.backgroundColor = "#f9fafb";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = "white";
-                      }}
-                    >
-                      Xem chi tiết
-                    </button>
-                  )}
+                  {apt.trang_thai ===2&&
+                    new Date(apt.date) < today && (
+                      <button
+                        onClick={() => console.log("View details:", apt.id)}
+                        style={{
+                          padding: "0.75rem 1rem",
+                          border: "1px solid #6b7280",
+                          borderRadius: "8px",
+                          backgroundColor: "white",
+                          color: "#6b7280",
+                          fontSize: "0.875rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.backgroundColor = "#f9fafb";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "white";
+                        }}
+                      >
+                        Xem chi tiết
+                      </button>
+                    )}
                 </div>
               </div>
             ))
