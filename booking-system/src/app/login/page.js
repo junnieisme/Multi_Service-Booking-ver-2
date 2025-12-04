@@ -142,7 +142,7 @@ export default function LoginPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            BookingSystem
+            ServiceHub
           </h1>
           <p
             style={{

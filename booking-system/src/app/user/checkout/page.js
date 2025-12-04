@@ -998,7 +998,6 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          Processing Overlay
           {isProcessing && (
             <div
               style={{
