@@ -8,37 +8,46 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState("user"); // "user" hoặc "provider"
+  const [userRole, setUserRole] = useState("user");
 
-  // Kiểm tra trạng thái đăng nhập khi component mount và khi pathname thay đổi
+  // --- PHẦN ĐÃ SỬA CHỮA ---
   useEffect(() => {
-    // Giả sử bạn lưu token và role trong localStorage/sessionStorage
-    // Thay đổi logic này theo cách bạn lưu trữ authentication thực tế
-    const token =
-      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    const role =
-      localStorage.getItem("userRole") ||
-      sessionStorage.getItem("userRole") ||
-      "user";
+    // 1. Lấy token
+    const token = localStorage.getItem("authToken");
 
+    // 2. Lấy chuỗi JSON user từ LocalStorage (Key là "user" theo ảnh bạn gửi)
+    const userStr = localStorage.getItem("user");
+
+    let currentRole = "user"; // Mặc định
+
+    // 3. Parse JSON an toàn để lấy role thực tế
+    if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        // Kiểm tra xem userObj có tồn tại và có thuộc tính role không
+        if (userObj && userObj.role) {
+          currentRole = userObj.role;
+        }
+      } catch (error) {
+        console.error("Lỗi khi đọc dữ liệu user từ LocalStorage:", error);
+      }
+    }
+
+    // 4. Cập nhật state
     if (token) {
       setIsLoggedIn(true);
-      setUserRole(role);
+      setUserRole(currentRole);
     } else {
       setIsLoggedIn(false);
       setUserRole("user");
     }
   }, [pathname]);
 
-  // Xác định role dựa trên current path HOẶC từ state nếu đã đăng nhập
-  const isProvider = isLoggedIn
-    ? userRole === "provider"
-    : pathname.startsWith("/provider");
-
-  // Logic xác định user (dùng để hiện menu tương ứng)
-  const isUser = isLoggedIn
-    ? userRole === "user"
-    : pathname.startsWith("/user") || (!isProvider && pathname !== "/");
+  // Logic xác định có phải Provider không:
+  // Ưu tiên 1: Đang đứng ở trang /provider
+  // Ưu tiên 2: Role trong tài khoản là "provider"
+  const isProviderRoute = pathname.startsWith("/provider");
+  const isProvider = isProviderRoute || (isLoggedIn && userRole === "provider");
 
   const providerMenu = [
     { name: "Dashboard", path: "/provider" },
@@ -54,13 +63,14 @@ export default function Header() {
     { name: "Hồ sơ", path: "/user/profile" },
   ];
 
-  const currentMenu = isProvider ? providerMenu : userMenu;
+  // Nếu đang ở route provider thì hiện menu provider, ngược lại hiện menu user
+  const currentMenu = isProviderRoute ? providerMenu : userMenu;
 
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
     // Xóa thông tin đăng nhập
     localStorage.removeItem("authToken");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem("user"); // Sửa: Xóa key "user" thay vì "userRole"
 
     // Reset state
     setIsLoggedIn(false);
@@ -69,6 +79,7 @@ export default function Header() {
     // Chuyển hướng về trang chủ
     router.push("/");
   };
+  // --- KẾT THÚC PHẦN SỬA ---
 
   return (
     <header
@@ -158,57 +169,6 @@ export default function Header() {
             {pathname !== "/" && isLoggedIn && (
               <NotificationBell notifications={[]} />
             )}
-
-            {/* Role Indicator + Switch - ẩn ở homepage, chỉ hiện khi đã đăng nhập
-            {pathname !== "/" && isLoggedIn && (
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.875rem",
-                    color: "#374151",
-                    padding: "0.25rem 0.75rem",
-                    backgroundColor: isProvider ? "#fef3c7" : "#dbeafe",
-                    borderRadius: "0.375rem",
-                    fontWeight: "500",
-                  }}
-                >
-                  {isProvider ? "Nhà cung cấp" : "Khách hàng"}
-                </span>
-
-                <button
-                  onClick={() => {
-                    if (isProvider) {
-                      router.push("/user");
-                    } else {
-                      router.push("/provider");
-                    }
-                  }}
-                  style={{
-                    color: "#374151",
-                    background: "none",
-                    border: "1px solid #d1d5db",
-                    cursor: "pointer",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "0.375rem",
-                    fontWeight: "500",
-                    fontSize: "0.875rem",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = "#f9fafb";
-                    e.target.style.borderColor = "#9ca3af";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.borderColor = "#d1d5db";
-                  }}
-                >
-                  {isProvider ? "Chế độ Khách hàng" : "Chế độ Nhà cung cấp"}
-                </button>
-              </div>
-            )} */}
 
             {/* Ở HOMEPAGE: HIỂN THỊ ĐĂNG NHẬP / ĐĂNG KÝ HOẶC ĐĂNG XUẤT */}
             {pathname === "/" && (
