@@ -17,8 +17,8 @@ export default function Header() {
     const token =
       localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
     const role =
-      localStorage.getItem("userRole") ||
-      sessionStorage.getItem("userRole") ||
+      localStorage.getItem("user") ||
+      sessionStorage.getItem("user") ||
       "user";
 
     if (token) {
