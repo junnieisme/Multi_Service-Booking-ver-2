@@ -12,6 +12,30 @@ export default function UserDashboard() {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [passedAppointments, setPassedAppointments] = useState([]);
   useEffect(() => {
+    const fetchDataUser = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/khach-hang/check-login",
+          {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setUser(data.data);
+          console.log("usserr", data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -20,12 +44,14 @@ export default function UserDashboard() {
           {
             method: "GET",
             headers: {
+              "Content-Type": "application/json",
               Authorization: "Bearer " + localStorage.getItem("authToken"),
             },
           }
         );
         const data = await response.json();
         setLich(data);
+        console.log("lich ne", data);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
       } finally {
@@ -40,11 +66,12 @@ export default function UserDashboard() {
           {
             method: "GET",
             headers: {
+              "Content-Type": "application/json",
               Authorization: "Bearer " + localStorage.getItem("authToken"),
             },
           }
         );
-         if (!response.ok) {
+        if (!response.ok) {
           console.warn("Không thể kết nối API");
           router.push("/");
           return;
@@ -54,8 +81,8 @@ export default function UserDashboard() {
         // Kiểm tra trạng thái trả về từ API
         if (result.status === true) {
           console.log("Dữ liệu nhận từ API: ", result.data);
-          setUpcomingAppointments(result.data); 
-        } 
+          setUpcomingAppointments(result.data);
+        }
       } catch (err) {
         console.error("Lỗi API:", err);
         router.push("/");
@@ -63,8 +90,8 @@ export default function UserDashboard() {
         setLoading(false);
       }
     };
-    
- const DataPassedAppointments = async () => {
+
+    const DataPassedAppointments = async () => {
       try {
         setLoading(true);
         const response = await fetch(
@@ -72,11 +99,12 @@ export default function UserDashboard() {
           {
             method: "GET",
             headers: {
+              "Content-Type": "application/json",
               Authorization: "Bearer " + localStorage.getItem("authToken"),
             },
           }
         );
-         if (!response.ok) {
+        if (!response.ok) {
           console.warn("Không thể kết nối API");
           router.push("/");
           return;
@@ -86,8 +114,8 @@ export default function UserDashboard() {
         // Kiểm tra trạng thái trả về từ API
         if (result.status === true) {
           console.log("Dữ liệu nhận từ API: ", result.data);
-          setPassedAppointments(result.data); 
-        } 
+          setPassedAppointments(result.data);
+        }
       } catch (err) {
         console.error("Lỗi API:", err);
         router.push("/");
@@ -95,27 +123,28 @@ export default function UserDashboard() {
         setLoading(false);
       }
     };
+    fetchDataUser();
     fetchData();
     DataAppointments();
     DataPassedAppointments();
 
     // hiển thị tên khách hàng
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        setUser({ name: parsedUser.name || "Người dùng" });
-      } else {
-        // Nếu không có user data, set giá trị mặc định
-        setUser({ name: "Người dùng" });
-        console.warn("Không tìm thấy thông tin người dùng trong localStorage");
-      }
-    } catch (error) {
-      console.error("Lỗi khi đọc thông tin người dùng:", error);
-      setUser({ name: "Người dùng" });
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   const userData = localStorage.getItem("user");
+    //   if (userData) {
+    //     const parsedUser = JSON.parse(userData);
+    //     setUser({ name: parsedUser.name || "Người dùng" });
+    //   } else {
+    //     // Nếu không có user data, set giá trị mặc định
+    //     setUser({ name: "Người dùng" });
+    //     console.warn("Không tìm thấy thông tin người dùng trong localStorage");
+    //   }
+    // } catch (error) {
+    //   console.error("Lỗi khi đọc thông tin người dùng:", error);
+    //   setUser({ name: "Người dùng" });
+    // } finally {
+    //   setLoading(false);
+    // }
   }, []);
 
   // const upcomingAppointments = [
@@ -176,7 +205,7 @@ export default function UserDashboard() {
       color: "#2563eb",
     },
     { label: "Dịch vụ đã dùng", value: lich.so_lich_da_qua, color: "#16a34a" },
-    { label: "Đánh giá đã gửi", value: "8", color: "#dc2626" },
+    { label: "Đánh giá đã gửi", value: "0", color: "#dc2626" },
     { label: "Điểm tích lũy", value: lich.diem_tich_luy, color: "#eab308" },
   ];
 
@@ -219,7 +248,7 @@ export default function UserDashboard() {
               color: "#1f2937",
             }}
           >
-            Xin chào, {user?.name || "Người dùng"}! 👋
+            Xin chào, {user?.ho_ten || "Người dùng"}! 👋
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Chúc bạn một ngày tốt lành. Bạn có <b>{lich.so_lich_sap_toi}</b>{" "}
@@ -387,14 +416,22 @@ export default function UserDashboard() {
                             backgroundColor:
                               appointment.trang_thai === 0
                                 ? "#fef3c7"
-                                : "#d1fae5",
+                                : appointment.trang_thai === 1
+                                ? "#d1fae5"
+                                : "#FDC9D1",//cai nay la da huy
                             color:
-                              appointment.trang_thai === 1
+                              appointment.trang_thai === 0
                                 ? "#92400e"
-                                : "#065f46",
+                                : appointment.trang_thai === 1
+                                ? "#065f46"
+                                : "#FF0025",// cai nay la da huy
                           }}
                         >
-                          {appointment.trang_thai ===0 ? "Chờ xác nhận" : "Đã xác nhận"}
+                          {appointment.trang_thai === 0
+                            ? "Chờ xác nhận"
+                            : appointment.trang_thai === 1
+                            ? "Đã xác nhận"
+                            : "Đã hủy"}
                         </span>
                       </div>
                       <p
@@ -575,7 +612,7 @@ export default function UserDashboard() {
                         </span>
                       </p>
                       <p style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
-                        {activity.thoi_gian + ", " + activity.ngay_dat_lich }
+                        {activity.thoi_gian + ", " + activity.ngay_dat_lich}
                       </p>
                     </div>
                   </div>

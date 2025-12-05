@@ -467,9 +467,9 @@ export default function UserProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    <option value="0">Nam</option>
-                    <option value="1">Nữ</option>
                     <option value="2">Khác</option>
+                    <option value="1">Nữ</option>
+                    <option value="0">Nam</option>
                   </select>
                 ) : (
                   <div

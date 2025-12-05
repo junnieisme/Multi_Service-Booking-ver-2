@@ -754,8 +754,8 @@ export default function PaymentPage() {
                       }}
                     >
                       Số tiền thanh toán:{" "}
-                      <span style={{ fontSize: "14px", color: "#92400e" }}>
-                        {phan_tram_thanh_toan}
+                      <span style={{ fontSize: "18px", color: "#92400e" }}>
+                        ({phan_tram_thanh_toan})
                       </span>
                     </span>
                     <span
