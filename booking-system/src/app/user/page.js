@@ -11,6 +11,14 @@ export default function UserDashboard() {
   const [lich, setLich] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [passedAppointments, setPassedAppointments] = useState([]);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   useEffect(() => {
     const fetchDataUser = async () => {
       try {
@@ -204,9 +212,10 @@ export default function UserDashboard() {
       value: lich.so_lich_sap_toi,
       color: "#2563eb",
     },
+
     { label: "Dịch vụ đã dùng", value: lich.so_lich_da_qua, color: "#16a34a" },
-    { label: "Đánh giá đã gửi", value: "0", color: "#dc2626" },
-    { label: "Điểm tích lũy", value: lich.diem_tich_luy, color: "#eab308" },
+    { label: "Lịch Đã Hủy", value: lich.so_lich_da_huy, color: "#dc2626" },
+    { label: "Dịch vụ bị nhỡ", value: lich.missing, color: "#eab308" },
   ];
 
   // Hiển thị loading nếu đang tải dữ liệu
@@ -450,7 +459,7 @@ export default function UserDashboard() {
                           fontWeight: "500",
                         }}
                       >
-                        {appointment.thoi_gian} ngày {appointment.ngay_dat_lich}
+                        {appointment.thoi_gian} ngày {formatDate(appointment.ngay_dat_lich)}
                       </p>
                     </div>
                   </div>
@@ -612,7 +621,7 @@ export default function UserDashboard() {
                         </span>
                       </p>
                       <p style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
-                        {activity.thoi_gian + ", " + activity.ngay_dat_lich}
+                        {activity.thoi_gian + ", " +  formatDate(activity.ngay_dat_lich)}
                       </p>
                     </div>
                   </div>

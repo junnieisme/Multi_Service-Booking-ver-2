@@ -7,7 +7,14 @@ import MainContent from "@/components/Layout/MainContent";
 export default function BookingSuccessPage() {
   const [bookingInfo, setBookingInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
+ const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   useEffect(() => {
     const fetchdata = async () => {
       try {
@@ -300,7 +307,7 @@ export default function BookingSuccessPage() {
                 >
                   <span style={{ color: "#6b7280" }}>Thời gian:</span>
                   <span style={{ fontWeight: "500" }}>
-                    {bookingInfo.ngay_dat_lich} - {bookingInfo.thoi_gian}
+                   {bookingInfo.thoi_gian} - {formatDate(bookingInfo.ngay_dat_lich)} 
                   </span>
                 </div>
 
