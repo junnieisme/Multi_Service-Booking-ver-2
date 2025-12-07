@@ -1,56 +1,176 @@
 // src/app/provider/page.js
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MainContent from "@/components/Layout/MainContent";
-
 export default function ProviderDashboard() {
+  const [user, setUser] = useState(null);
+  const [countData, setCountData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [todaySchedule,setTodaySchedule] = useState([]);
+
   const router = useRouter();
+  useEffect(() => {
+    const fetchTodayBooking = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/today-booking",
+          {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setTodaySchedule(data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const fetchDataBooking = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/booking",
+          {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setUpcomingAppointments(data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const fetchDataNCC = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/check-login",
+          {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setUser(data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const fetchcountData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/count-booking",
+          {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setCountData(data);
+          console.log("usser", data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchcountData();
+    fetchDataNCC();
+    fetchDataBooking();
+    fetchTodayBooking();
 
+  }, []);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   const stats = [
-    { label: "Lịch hẹn hôm nay", value: "8", color: "#2563eb" },
-    { label: "Doanh thu tháng", value: "25.4M", color: "#16a34a" },
-    { label: "Đánh giá mới", value: "12", color: "#eab308" },
-    { label: "Tỷ lệ giữ chỗ", value: "85%", color: "#dc2626" },
+    {
+      label: "Lịch sắp tới",
+      value: countData?.so_lich_sap_toi,
+      color: "#2563eb",
+    },
+    {
+      label: "Doanh thu dự kiến (VNĐ)",
+      value: Number(countData?.doanh_thu || 0).toLocaleString("vi-VN"),
+      color: "#16a34a",
+    },
+    { label: "Lượt đánh giá ", value: "100", color: "#eab308" },
+    { label: "Lịch bị hủy", value: countData?.lich_bi_huy, color: "#dc2626" },
   ];
 
-  const upcomingAppointments = [
-    {
-      id: "#1256",
-      customer: "Mai Anh",
-      service: "Spa mặt",
-      time: "14:00",
-      status: "Đã xác nhận",
-    },
-    {
-      id: "#1257",
-      customer: "Tuấn",
-      service: "Cắt tóc nam",
-      time: "18:30",
-      status: "Chờ xác nhận",
-    },
-    {
-      id: "#1258",
-      customer: "Hương",
-      service: "Massage body",
-      time: "09:00",
-      status: "Đã xác nhận",
-    },
-    {
-      id: "#1259",
-      customer: "Minh",
-      service: "Nail art",
-      time: "16:00",
-      status: "Đã xác nhận",
-    },
-  ];
+  // const upcomingAppointments = [
+  //   {
+  //     id: "#1256",
+  //     customer: "Mai Anh",
+  //     service: "Spa mặt",
+  //     time: "14:00",
+  //     status: "Đã xác nhận",
+  //   },
+  //   {
+  //     id: "#1257",
+  //     customer: "Tuấn",
+  //     service: "Cắt tóc nam",
+  //     time: "18:30",
+  //     status: "Chờ xác nhận",
+  //   },
+  //   {
+  //     id: "#1258",
+  //     customer: "Hương",
+  //     service: "Massage body",
+  //     time: "09:00",
+  //     status: "Đã xác nhận",
+  //   },
+  //   {
+  //     id: "#1259",
+  //     customer: "Minh",
+  //     service: "Nail art",
+  //     time: "16:00",
+  //     status: "Đã xác nhận",
+  //   },
+  // ];
 
-  const todaySchedule = [
-    { time: "09:00", service: "Massage - Hương", status: "Hoàn thành" },
-    { time: "11:00", service: "Cắt tóc - Nam", status: "Đang thực hiện" },
-    { time: "14:00", service: "Spa mặt - Mai Anh", status: "Sắp tới" },
-    { time: "16:00", service: "Nail art - Minh", status: "Sắp tới" },
-  ];
+  // const todaySchedule = [
+  //   { time: "09:00", service: "Massage - Hương", status: "Hoàn thành" },
+  //   { time: "11:00", service: "Cắt tóc - Nam", status: "Đang thực hiện" },
+  //   { time: "14:00", service: "Spa mặt - Mai Anh", status: "Sắp tới" },
+  //   { time: "16:00", service: "Nail art - Minh", status: "Sắp tới" },
+  // ];
 
   return (
     <MainContent>
@@ -65,7 +185,7 @@ export default function ProviderDashboard() {
               color: "#1f2937",
             }}
           >
-            Dashboard Nhà cung cấp 🏢
+            Xin chào {user?.ho_ten} 🏢
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Tổng quan hoạt động và quản lý dịch vụ của bạn
@@ -204,7 +324,7 @@ export default function ProviderDashboard() {
                             fontSize: "0.875rem",
                           }}
                         >
-                          {appointment.service}
+                          {appointment.ten_dich_vu} • {appointment.ten_san_pham}
                         </h3>
                         <span
                           style={{
@@ -213,26 +333,35 @@ export default function ProviderDashboard() {
                             padding: "0.25rem 0.5rem",
                             borderRadius: "12px",
                             backgroundColor:
-                              appointment.status === "Đã xác nhận"
+                              appointment.trang_thai === 1
                                 ? "#d1fae5"
-                                : "#fef3c7",
+                                : appointment.trang_thai === 0
+                                ? "#fef3c7"
+                                : "#FDC9D1",
                             color:
-                              appointment.status === "Đã xác nhận"
+                              appointment.trang_thai === 0
+                                ? "#92400e"
+                                : appointment.trang_thai === 1
                                 ? "#065f46"
-                                : "#92400e",
+                                : "#FF0025",
                           }}
                         >
-                          {appointment.status}
+                          {appointment.trang_thai == 0
+                            ? "Chưa xác nhận"
+                            : appointment.trang_thai == 1
+                            ? "Đã xác nhận"
+                            : "Đã hủy"}
                         </span>
                       </div>
                       <p
                         style={{
                           color: "#6b7280",
-                          fontSize: "0.75rem",
+                          fontSize: "1 rem",
                           marginBottom: "0.25rem",
                         }}
                       >
-                        {appointment.customer} • {appointment.time}
+                        {appointment.ten_khach_hang} • {appointment.thoi_gian} -{" "}
+                        {formatDate(appointment.ngay_dat_lich)}
                       </p>
                       <p
                         style={{
@@ -241,13 +370,13 @@ export default function ProviderDashboard() {
                           fontWeight: "500",
                         }}
                       >
-                        {appointment.id}
+                        {appointment.ma_hoa_don}
                       </p>
                     </div>
-                    <button
+                    {/* <button
                       onClick={() =>
                         router.push(
-                          `/provider/appointments?booking=${appointment.id}`
+                          `/provider/appointments`
                         )
                       }
                       style={{
@@ -269,7 +398,7 @@ export default function ProviderDashboard() {
                       }}
                     >
                       Chi tiết
-                    </button>
+                    </button> */}
                   </div>
                 ))}
               </div>
@@ -297,7 +426,7 @@ export default function ProviderDashboard() {
                   marginBottom: "1rem",
                 }}
               >
-                Lịch trình hôm nay
+                Công việc trong ngày
               </h2>
               <div
                 style={{
@@ -326,10 +455,10 @@ export default function ProviderDashboard() {
                           fontSize: "0.875rem",
                         }}
                       >
-                        {schedule.time}
+                        {schedule.thoi_gian} • {formatDate(schedule.ngay_dat_lich)}
                       </div>
                       <div style={{ color: "#6b7280", fontSize: "0.75rem" }}>
-                        {schedule.service}
+                        {schedule.ten_dich_vu} - {schedule.ten_san_pham}
                       </div>
                     </div>
                     <span
@@ -338,21 +467,21 @@ export default function ProviderDashboard() {
                         fontWeight: "500",
                         padding: "0.25rem 0.5rem",
                         borderRadius: "12px",
-                        backgroundColor:
-                          schedule.status === "Hoàn thành"
-                            ? "#d1fae5"
-                            : schedule.status === "Đang thực hiện"
-                            ? "#dbeafe"
-                            : "#fef3c7",
-                        color:
-                          schedule.status === "Hoàn thành"
-                            ? "#065f46"
-                            : schedule.status === "Đang thực hiện"
-                            ? "#1e40af"
-                            : "#92400e",
+                          backgroundColor:
+                              schedule.trang_thai === 1
+                                ? "#d1fae5"
+                                : schedule.trang_thai === 0
+                                ? "#fef3c7"
+                                : "#FDC9D1",
+                            color:
+                              schedule.trang_thai === 0
+                                ? "#92400e"
+                                : schedule.trang_thai === 1
+                                ? "#065f46"
+                                : "#FF0025",
                       }}
                     >
-                      {schedule.status}
+                      {schedule.trang_thai===0?"Chưa xác nhận":"Đã xác nhận"}
                     </span>
                   </div>
                 ))}

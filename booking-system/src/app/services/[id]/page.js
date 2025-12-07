@@ -261,7 +261,7 @@ export default function ServiceDetail() {
                 lineHeight: "1.2",
               }}
             >
-              {service.ten_dich_vu}
+              {service.ten_san_pham}
             </h1>
 
             {/* Tên Thương hiệu nhỏ hơn ở dưới */}
@@ -300,7 +300,7 @@ export default function ServiceDetail() {
                   fontWeight: "600",
                 }}
               >
-                {service.loai_dich_vu}
+                {service.ten_dich_vu}
               </span>
 
               <div
@@ -311,6 +311,10 @@ export default function ServiceDetail() {
                 }}
               >
                 <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
+                <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
+                <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
+                <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
+                <span style={{ color: "#ffc107", fontSize: "1.1rem" }}>⭐</span>
                 <span
                   style={{
                     fontSize: "0.9rem",
@@ -318,11 +322,11 @@ export default function ServiceDetail() {
                     fontWeight: "500",
                   }}
                 >
-                  {service.danh_gia} ({service.luot_danh_gia} đánh giá)
+                  {5} ({100.000} đánh giá)
                 </span>
               </div>
 
-              <div
+              {/* <div
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -339,7 +343,7 @@ export default function ServiceDetail() {
                 >
                   {service.thoi_gian}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             {/* Provider Info */}
@@ -437,7 +441,7 @@ export default function ServiceDetail() {
             </div>
 
             {/* Availability */}
-            <div
+            {/* <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -452,8 +456,8 @@ export default function ServiceDetail() {
               }}
             >
               <span>✅</span>
-              {service.trang_thai}
-            </div>
+              {service.don_gia}
+            </div> */}
           </div>
         </div>
 

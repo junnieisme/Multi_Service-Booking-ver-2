@@ -161,7 +161,7 @@ export default function RegisterPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            BookingSystem
+            ServiceHub
           </h1>
           <p style={{ fontSize: "1rem", opacity: 0.9, fontWeight: "500" }}>
             Tạo tài khoản mới để bắt đầu

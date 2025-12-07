@@ -6,95 +6,153 @@ import MainContent from "@/components/Layout/MainContent";
 
 export default function ProviderServices() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [services, setServices] = useState([]);
+  const [data, setData] = useState([]);
   const [filter, setFilter] = useState("all"); // all, active, inactive
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/my-service",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status === true) {
+          setServices(data.data);
+          setData(data);
+        } else if (data.status === false) {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
     // Mock data - replace with API call
-    setServices([
-      {
-        id: 1,
-        name: "Cắt tóc nam cao cấp",
-        price: 150000,
-        duration: 45,
-        category: "Làm đẹp",
-        status: "active",
-        description:
-          "Cắt tóc theo phong cách Hàn Quốc, bao gồm gội đầu và tạo kiểu",
-        image: "/images/haircut.jpg",
-        bookings: 125,
-      },
-      {
-        id: 2,
-        name: "Massage thư giãn",
-        price: 300000,
-        duration: 60,
-        category: "Spa & Massage",
-        status: "active",
-        description: "Massage toàn thân giúp thư giãn, giảm stress",
-        image: "/images/massage.jpg",
-        bookings: 89,
-      },
-      {
-        id: 3,
-        name: "Spa mặt chuyên sâu",
-        price: 500000,
-        duration: 90,
-        category: "Chăm sóc da",
-        status: "active",
-        description: "Quy trình chăm sóc da 7 bước cho làn da sáng khỏe",
-        image: "/images/facial.jpg",
-        bookings: 67,
-      },
-      {
-        id: 4,
-        name: "Nail art cao cấp",
-        price: 250000,
-        duration: 75,
-        category: "Làm nail",
-        status: "inactive",
-        description: "Vẽ nail nghệ thuật theo yêu cầu",
-        image: "/images/nail.jpg",
-        bookings: 42,
-      },
-      {
-        id: 5,
-        name: "Cạo mặt & Đắp mặt nạ",
-        price: 180000,
-        duration: 50,
-        category: "Chăm sóc da",
-        status: "active",
-        description: "Dịch vụ cạo mặt truyền thống kết hợp đắp mặt nạ",
-        image: "/images/shave.jpg",
-        bookings: 34,
-      },
-    ]);
+    // setServices([
+    //   {
+    //     id: 1,
+    //     name: "Cắt tóc nam cao cấp",
+    //     price: 150000,
+    //     duration: 45,
+    //     category: "Làm đẹp",
+    //     status: "active",
+    //     description:
+    //       "Cắt tóc theo phong cách Hàn Quốc, bao gồm gội đầu và tạo kiểu",
+    //     image: "/images/haircut.jpg",
+    //     bookings: 125,
+    //   },
+    //   {
+    //     id: 2,
+    //     name: "Massage thư giãn",
+    //     price: 300000,
+    //     duration: 60,
+    //     category: "Spa & Massage",
+    //     status: "active",
+    //     description: "Massage toàn thân giúp thư giãn, giảm stress",
+    //     image: "/images/massage.jpg",
+    //     bookings: 89,
+    //   },
+    //   {
+    //     id: 3,
+    //     name: "Spa mặt chuyên sâu",
+    //     price: 500000,
+    //     duration: 90,
+    //     category: "Chăm sóc da",
+    //     status: "active",
+    //     description: "Quy trình chăm sóc da 7 bước cho làn da sáng khỏe",
+    //     image: "/images/facial.jpg",
+    //     bookings: 67,
+    //   },
+    //   {
+    //     id: 4,
+    //     name: "Nail art cao cấp",
+    //     price: 250000,
+    //     duration: 75,
+    //     category: "Làm nail",
+    //     status: "inactive",
+    //     description: "Vẽ nail nghệ thuật theo yêu cầu",
+    //     image: "/images/nail.jpg",
+    //     bookings: 42,
+    //   },
+    //   {
+    //     id: 5,
+    //     name: "Cạo mặt & Đắp mặt nạ",
+    //     price: 180000,
+    //     duration: 50,
+    //     category: "Chăm sóc da",
+    //     status: "active",
+    //     description: "Dịch vụ cạo mặt truyền thống kết hợp đắp mặt nạ",
+    //     image: "/images/shave.jpg",
+    //     bookings: 34,
+    //   },
+    // ]);
   }, []);
 
   const filteredServices = services.filter((service) =>
-    filter === "all" ? true : service.status === filter
+    filter === "all" ? true : service.trang_thai === filter
   );
 
   const addService = () => {
     router.push("/provider/services/create");
   };
 
-  const editService = (serviceId) => {
-    router.push(`/provider/services/edit/${serviceId}`);
-  };
+  // const editService = (serviceId) => {
+  //   router.push(`/provider/services/edit/${serviceId}`);
+  // };
 
-  const toggleServiceStatus = (serviceId, currentStatus) => {
-    const newStatus = currentStatus === "active" ? "inactive" : "active";
-    setServices((prev) =>
-      prev.map((service) =>
-        service.id === serviceId ? { ...service, status: newStatus } : service
-      )
-    );
+  const toggleServiceStatus = async (serviceId, currentStatus) => {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/nha-cung-cap/my-service/change-status",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: serviceId,
+            trang_thai: newStatus,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.status === true) {
+        setServices((prev) =>
+          prev.map((service) =>
+            service.id === serviceId
+              ? { ...service, trang_thai: newStatus }
+              : service
+          )
+        );
+        // alert(data.message);
+      } else if (data.status === false) {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+    } finally {
+      setLoading(false);
+    }
+
     // TODO: Call API to update status
   };
 
   const getStatusInfo = (status) => {
-    return status === "active"
+    return status === 1
       ? { label: "Đang hoạt động", color: "#16a34a", bg: "#d1fae5" }
       : { label: "Ngừng hoạt động", color: "#dc2626", bg: "#fee2e2" };
   };
@@ -122,7 +180,7 @@ export default function ProviderServices() {
                 color: "#1f2937",
               }}
             >
-              Dịch vụ của tôi 💼
+              Dịch vụ của {data.nha_cung_cap} 💼
             </h1>
             <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
               Quản lý danh sách dịch vụ bạn cung cấp
@@ -170,20 +228,17 @@ export default function ProviderServices() {
             { label: "Tổng dịch vụ", value: services.length, color: "#2563eb" },
             {
               label: "Đang hoạt động",
-              value: services.filter((s) => s.status === "active").length,
+              value: services.filter(s => s.trang_thai === 1).length,
               color: "#16a34a",
             },
             {
               label: "Ngừng hoạt động",
-              value: services.filter((s) => s.status === "inactive").length,
+              value: services.filter(s => s.trang_thai === 0).length,
               color: "#dc2626",
             },
             {
               label: "Tổng lượt đặt",
-              value: services.reduce(
-                (sum, service) => sum + service.bookings,
-                0
-              ),
+              value: data.count_booking,
               color: "#eab308",
             },
           ].map((stat, index) => (
@@ -232,8 +287,8 @@ export default function ProviderServices() {
         >
           {[
             { key: "all", label: "Tất cả dịch vụ" },
-            { key: "active", label: "Đang hoạt động" },
-            { key: "inactive", label: "Ngừng hoạt động" },
+            { key: 1, label: "Đang hoạt động" },
+            { key: 0, label: "Ngừng hoạt động" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -278,7 +333,7 @@ export default function ProviderServices() {
           }}
         >
           {filteredServices.map((service) => {
-            const statusInfo = getStatusInfo(service.status);
+            const statusInfo = getStatusInfo(service.trang_thai);
 
             return (
               <div
@@ -306,7 +361,7 @@ export default function ProviderServices() {
                   style={{
                     height: "200px",
                     backgroundColor: "#f3f4f6",
-                    backgroundImage: `url(${service.image})`,
+                    backgroundImage: `url(${service.hinh_anh})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     position: "relative",
@@ -347,7 +402,7 @@ export default function ProviderServices() {
                         flex: 1,
                       }}
                     >
-                      {service.name}
+                      {service.ten_san_pham}
                     </h3>
                     <span
                       style={{
@@ -361,7 +416,7 @@ export default function ProviderServices() {
                         marginLeft: "0.5rem",
                       }}
                     >
-                      {service.bookings} lượt đặt
+                      {10} lượt đặt
                     </span>
                   </div>
 
@@ -373,7 +428,7 @@ export default function ProviderServices() {
                       lineHeight: "1.4",
                     }}
                   >
-                    {service.description}
+                    {service.mo_ta_ngan}
                   </p>
 
                   <div
@@ -401,11 +456,11 @@ export default function ProviderServices() {
                           fontSize: "1rem",
                         }}
                       >
-                        {service.price.toLocaleString()} VND
+                        {Number(service.don_gia).toLocaleString()} VND
                       </div>
                     </div>
                     <div>
-                      <div
+                      {/* <div
                         style={{
                           color: "#6b7280",
                           fontSize: "0.75rem",
@@ -422,7 +477,7 @@ export default function ProviderServices() {
                         }}
                       >
                         {service.duration} phút
-                      </div>
+                      </div> */}
                     </div>
                     <div>
                       <div
@@ -441,7 +496,7 @@ export default function ProviderServices() {
                           fontSize: "0.875rem",
                         }}
                       >
-                        {service.category}
+                        {service.ten_dich_vu}
                       </div>
                     </div>
                   </div>
@@ -475,13 +530,12 @@ export default function ProviderServices() {
                     </button>
                     <button
                       onClick={() =>
-                        toggleServiceStatus(service.id, service.status)
+                        toggleServiceStatus(service.id, service.trang_thai)
                       }
                       style={{
                         backgroundColor:
-                          service.status === "active" ? "#fef3c7" : "#d1fae5",
-                        color:
-                          service.status === "active" ? "#92400e" : "#065f46",
+                        service.trang_thai === 1 ? "#fef3c7" : "#d1fae5",
+                        color: service.trang_thai === 1 ? "#92400e" : "#065f46",
                         border: "none",
                         padding: "0.5rem 1rem",
                         borderRadius: "6px",
@@ -493,14 +547,14 @@ export default function ProviderServices() {
                       }}
                       onMouseOver={(e) => {
                         e.target.style.backgroundColor =
-                          service.status === "active" ? "#fef3c7" : "#d1fae5";
+                          service.trang_thai === 1 ? "#fef3c7" : "#d1fae5";
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.backgroundColor =
-                          service.status === "active" ? "#fef3c7" : "#d1fae5";
+                          service.trang_thai === 1 ? "#fef3c7" : "#d1fae5";
                       }}
                     >
-                      {service.status === "active" ? "Tạm dừng" : "Kích hoạt"}
+                      {service.trang_thai === 1 ? "Tạm dừng" : "Kích hoạt"}
                     </button>
                   </div>
                 </div>
@@ -530,7 +584,7 @@ export default function ProviderServices() {
               {filter === "all"
                 ? "Bạn chưa có dịch vụ nào"
                 : `Không có dịch vụ ${
-                    filter === "active" ? "đang hoạt động" : "ngừng hoạt động"
+                    filter === 1 ? "đang hoạt động" : "ngừng hoạt động"
                   }`}
             </p>
             <button
