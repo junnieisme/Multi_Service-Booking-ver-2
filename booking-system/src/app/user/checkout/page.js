@@ -10,7 +10,14 @@ export default function PaymentPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   // Hàm validate dữ liệu từ API
   const validatePaymentData = (data) => {
     if (!data) {
@@ -690,7 +697,7 @@ export default function PaymentPage() {
                       }}
                     >
                       <span style={{ marginRight: "4px" }}>📅</span>
-                      {paymentInfo.ngay_dat_lich} lúc {paymentInfo.thoi_gian}
+                      {formatDate(paymentInfo.ngay_dat_lich)} lúc {paymentInfo.thoi_gian}
                     </div>
                   </div>
                   <span

@@ -38,11 +38,10 @@ export default function BookingPage() {
     const dd = String(today.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   };
-
   const [bookingData, setBookingData] = useState({
-    ho_ten: user.name,
+    ho_ten: "",
     id_khach_hang: khachHangId,
-    so_dien_thoai: so_dien_thoai,
+    so_dien_thoai: "",
     id_chi_tiet_thuong_hieu: serviceId,
     ngay_dat_lich: getTodayString(),
     thoi_gian: "14:00",
@@ -55,6 +54,42 @@ export default function BookingPage() {
 
   // Gọi API thật để lấy thông tin dịch vụ
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/khach-hang/check-login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        if (!response.ok) {
+          console.warn("Không thể kết nối API dịch vụ");
+          alert("Không thể tải thông tin dịch vụ. Vui lòng thử lại sau.");
+          return;
+        }
+
+        const result = await response.json();
+        // Kiểm tra trạng thái trả về từ API
+        if (result.status === true) {
+          setBookingData((prev) => ({
+            ...prev,
+            ho_ten: result.data.ho_ten,
+            so_dien_thoai: result.data.so_dien_thoai,
+            id_khach_hang: result.data.id,
+          }));
+        }
+      } catch (err) {
+        console.error("Lỗi API:", err);
+        alert("Có lỗi xảy ra khi tải thông tin dịch vụ.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -89,7 +124,7 @@ export default function BookingPage() {
         setIsLoading(false);
       }
     };
-
+    fetchUser();
     if (serviceId) {
       fetchData();
     } else {
@@ -511,7 +546,7 @@ export default function BookingPage() {
             }}
           >
             {/* Responsive grid cho desktop */}
-            <style >{`
+            <style>{`
               @media (min-width: 1024px) {
                 .booking-container {
                   grid-template-columns: 1fr 1fr !important;

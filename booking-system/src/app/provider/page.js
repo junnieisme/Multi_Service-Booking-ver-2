@@ -373,10 +373,10 @@ export default function ProviderDashboard() {
                         {appointment.ma_hoa_don}
                       </p>
                     </div>
-                    <button
+                    {/* <button
                       onClick={() =>
                         router.push(
-                          `/provider/appointments?booking=${appointment.id}`
+                          `/provider/appointments`
                         )
                       }
                       style={{
@@ -398,7 +398,7 @@ export default function ProviderDashboard() {
                       }}
                     >
                       Chi tiết
-                    </button>
+                    </button> */}
                   </div>
                 ))}
               </div>

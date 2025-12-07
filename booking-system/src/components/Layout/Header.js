@@ -67,7 +67,23 @@ export default function Header() {
   const currentMenu = isProviderRoute ? providerMenu : userMenu;
 
   // Hàm xử lý đăng xuất
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const response = await fetch(
+          "http://127.0.0.1:8000/api/dang-xuat",
+          {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+          const data = await response.json();
+          if(data.status ===true){
+            alert(data.message)
+            router.push("/");
+          }
+
     // Xóa thông tin đăng nhập
     localStorage.removeItem("authToken");
     localStorage.removeItem("user"); // Sửa: Xóa key "user" thay vì "userRole"
@@ -75,9 +91,8 @@ export default function Header() {
     // Reset state
     setIsLoggedIn(false);
     setUserRole("user");
-
     // Chuyển hướng về trang chủ
-    router.push("/");
+    
   };
   // --- KẾT THÚC PHẦN SỬA ---
 
