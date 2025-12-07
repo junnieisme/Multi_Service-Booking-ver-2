@@ -134,7 +134,7 @@ export default function Header() {
                 color: "#2563eb",
                 cursor: "pointer",
               }}
-              onClick={() => router.push("/")}
+              // onClick={() => router.push("/")}
             >
               ServiceHub
             </h1>
