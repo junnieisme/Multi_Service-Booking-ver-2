@@ -1,41 +1,87 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MainContent from "@/components/Layout/MainContent";
+import { useState, useEffect } from "react";
 
 export default function BusinessProfilePage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    businessName: "Salon Beauty Pro",
-    description:
-      "Chuyên cung cấp các dịch vụ làm đẹp cao cấp với đội ngũ chuyên nghiệp",
-    address: "123 Nguyễn Huệ, Quận 1, TP.HCM",
-    phone: "0912345678",
-    email: "contact@beautypro.com",
-    website: "www.beautypro.com",
-    businessHours: "08:00 - 20:00",
-    categories: ["Làm đẹp", "Spa", "Massage"],
-    establishedYear: "2020",
-  });
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({});
+  const [originalData, setOriginalData] = useState({});
+  // businessName: "Salon Beauty Pro",
+  // description:
+  //   "Chuyên cung cấp các dịch vụ làm đẹp cao cấp với đội ngũ chuyên nghiệp",
+  // address: "123 Nguyễn Huệ, Quận 1, TP.HCM",
+  // phone: "0912345678",
+  // email: "contact@beautypro.com",
+  // website: "www.beautypro.com",
+  // businessHours: "08:00 - 20:00",
+  // categories: ["Làm đẹp", "Spa", "Massage"],
+  // establishedYear: "2020",
 
   const [socialMedia, setSocialMedia] = useState({
-    facebook: "beautypro.salon",
-    instagram: "beautypro.official",
-    zalo: "0912345678",
+    facebook: "example.facebook",
+    instagram: "example.instagram",
+    zalo: "example.zalo",
   });
-
+  useEffect(() => {
+    const fectData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/profile",
+          {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          setFormData(data.data[0]);
+          setOriginalData(data.data[0]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fectData();
+  }, []);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = async () => {
-    // API Call: PUT /api/provider/profile
-    console.log("Saving profile:", formData, socialMedia);
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/nha-cung-cap/change-profile",
+          {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("authToken"),
+            },
+              body: JSON.stringify(formData),
+          }
+        );
+        const data = await response.json();
+        if (data.status) {
+          alert(data.message)
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đặt lịch:", error);
+      } finally {
+        setLoading(false);
+      }
     setIsEditing(false);
-    // TODO: Add API call and error handling
   };
 
   const handleCancel = () => {
+    setFormData(originalData); 
     setIsEditing(false);
-    // TODO: Reset form data
   };
 
   return (
@@ -51,7 +97,7 @@ export default function BusinessProfilePage() {
               color: "#1f2937",
             }}
           >
-            Hồ sơ thương hiệu 🏢
+            Hồ sơ thương hiệu {formData.ho_ten} 🏢
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Quản lý thông tin và hình ảnh thương hiệu của bạn
@@ -129,9 +175,12 @@ export default function BusinessProfilePage() {
               {isEditing ? (
                 <input
                   type="text"
-                  value={formData.businessName}
+                  value={formData.ten_thuong_hieu}
                   onChange={(e) =>
-                    setFormData({ ...formData, businessName: e.target.value })
+                    setFormData({
+                      ...formData,
+                      ten_thuong_hieu: e.target.value,
+                    })
                   }
                   style={{
                     width: "100%",
@@ -152,7 +201,7 @@ export default function BusinessProfilePage() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  {formData.businessName}
+                  {formData.ten_thuong_hieu}
                 </div>
               )}
             </div>
@@ -172,9 +221,9 @@ export default function BusinessProfilePage() {
               </label>
               {isEditing ? (
                 <textarea
-                  value={formData.description}
+                  value={formData.mo_ta_ngan}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({ ...formData, mo_ta_ngan: e.target.value })
                   }
                   rows={4}
                   style={{
@@ -198,7 +247,7 @@ export default function BusinessProfilePage() {
                     lineHeight: "1.5",
                   }}
                 >
-                  {formData.description}
+                  {formData.mo_ta_ngan}
                 </div>
               )}
             </div>
@@ -226,9 +275,12 @@ export default function BusinessProfilePage() {
                 {isEditing ? (
                   <input
                     type="tel"
-                    value={formData.phone}
+                    value={formData.so_dien_thoai}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({
+                        ...formData,
+                        so_dien_thoai: e.target.value,
+                      })
                     }
                     style={{
                       width: "100%",
@@ -249,7 +301,7 @@ export default function BusinessProfilePage() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    {formData.phone}
+                    {formData.so_dien_thoai}
                   </div>
                 )}
               </div>
@@ -299,51 +351,103 @@ export default function BusinessProfilePage() {
             </div>
 
             {/* Address */}
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                  color: "#374151",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                Địa chỉ *
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
+              }}
+            >
+              <div>
+                <label
                   style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "6px",
+                    display: "block",
                     fontSize: "0.875rem",
-                  }}
-                  placeholder="Nhập địa chỉ"
-                />
-              ) : (
-                <div
-                  style={{
-                    padding: "0.75rem",
-                    backgroundColor: "#f9fafb",
-                    borderRadius: "6px",
-                    color: "#1f2937",
-                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    color: "#374151",
+                    marginBottom: "0.5rem",
                   }}
                 >
-                  {formData.address}
-                </div>
-              )}
+                  Địa chỉ cụ thể *
+                </label>
+                {isEditing ? (
+                  <input
+                    value={formData.dia_chi_cu_the}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        dia_chi_cu_the: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
+                    placeholder="Nhập địa chỉ cụ thể"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      padding: "0.75rem",
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "6px",
+                      color: "#1f2937",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {formData.dia_chi_cu_the}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    color: "#374151",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Tỉnh thành *
+                </label>
+                {isEditing ? (
+                  <input
+                    value={formData.tinh_thanh}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tinh_thanh: e.target.value })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
+                    placeholder="Nhập tỉnh thành"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      padding: "0.75rem",
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "6px",
+                      color: "#1f2937",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {formData.tinh_thanh}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Additional Information Grid */}
-            <div
+            {/* <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -441,7 +545,7 @@ export default function BusinessProfilePage() {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Action Buttons */}
